@@ -1,10 +1,77 @@
-# Narrative Memory for Virtual Humans PoC
+# Narrative Memory for Virtual Humans: A Proof-of-Concept
 
-A clean, modern, and mobile-friendly template for creating academic project pages and fostering collaborative research. This template is maintained by the [Fontys University of Applied Sciences' Interaction Design (IxD) Research Group](https://www.ixdfontysict.nl) to help students and researchers showcase their work effectively and collaborate efficiently.
+This repository contains the proof-of-concept (PoC) for a research project exploring a new paradigm for virtual human memory. Instead of relying on brittle, fixed personality traits, we investigate an emergent identity shaped by stories and experiences over time.
 
-## Getting Started: Repository Setup
+![Narrative Memory for Virtual Humans](docs/static/images/narrative-memory.png)
 
-To ensure the integrity of the research project and a smooth collaboration process, please follow these initial setup steps carefully after creating a repository from this template.
+## The Challenge
+
+Most virtual humans simulate “personality” with fixed trait sliders. That’s brittle, forgetful, and hard to scale across use-cases. We propose a leaner paradigm: identity emerging from stories over time. A small set of durable event-facts (“anchors”) supports living retellings (“flux”) that adapt to context while staying coherent.
+
+## Our Objective
+
+This project aims to demonstrate, via a minimal PoC, that an anchor-and-flux memory yields perceived continuity and individuality without explicit trait controls. We also aim to show that it can be cleanly integrated into a production-level Kubernetes + Kafka virtual human stack in the future.
+
+## Research Questions
+
+- Can users experience the agent as “the same someone” across turns and sessions when anchors persist and stories drift gently?
+- Does narrative drift increase engagement without undermining coherence?
+- What is the smallest practical memory loop—write, recall, transform, forget—that sustains this effect in real dialogue?
+
+## Our Approach
+
+We are building a compact prototype with two layers:
+
+1.  **Anchors:** A storage for short, durable event-facts in plain language.
+2.  **Flux:** A storage for brief story sketches that are re-told and slightly re-shaped depending on the moment.
+
+Retelling always states anchors in fresh words, braids one or two sketches into a simple arc, and adjusts voice lightly based on conversational cues. We will compare this against a persona-only baseline using the same LLM. Everything is designed to be human-legible and auditable.
+
+## PoC Plan
+
+The initial PoC will implement a single scenario end-to-end (the train-pause story), plus one micro-scenario for generality. We will show an initial telling, an immediate retell, and a simulated “one-week later” retell. The anchor will remain intact, while the story breathes and adapts. If this proves viable, we will extend it to a second pair of scenes.
+
+## Evaluation and Success Criteria
+
+We will run a small within-subjects test with colleagues and students. After each condition (our model vs. baseline), we will collect quick impressions on continuity/coherence and open comments.
+
+**Success is achieved if:**
+
+- Observers describe the PoC agent as the same character across retellings.
+- The memory feels natural rather than robotic.
+- There are no anchor contradictions.
+- The results generate a clear appetite to integrate this system into the broader virtual human architecture.
+
+## Risks and Handling
+
+- **Inconsistent Drift:** If drift feels inconsistent, we will tighten the retell policy so anchors are always foregrounded and story variation stays small.
+- **Style over Substance:** If style feels like flourish without substance, we will attach a one-line “why this mattered” note to each sketch to keep it grounded.
+- **Baseline Outperforms:** If the baseline outperforms our model, we will capture failure modes and iterate on one more micro-scenario before making a final decision.
+
+## Ethics and Data
+
+We are committed to ethical research.
+
+- **Transparency:** We will be explicit about what is remembered.
+- **Data:** Anchors are factual events from the scenario; no sensitive personal data is used.
+- **User Control:** Participants will have an opt-out option and can request an immediate memory purge.
+
+## Future Integration Path
+
+Post-PoC, the plan is to package the retell service as a stateless container with a small persistence layer for anchors and sketches. We will use Kafka topics for events and memory updates, allowing other virtual human services to subscribe. A thin API for “write anchor,” “amend anchor,” “write sketch,” and “retell” will be exposed. The entire system will be deployed as independent microservices on Kubernetes with standard observability and secret management, keeping the schema human-readable for audits and red-teaming.
+
+## Deliverables
+
+- A working PoC with a toggleable baseline vs. anchor-and-flux model.
+- A short write-up with methods, sample dialogues, and lessons learned.
+- A brief slide deck for presentations.
+- A backlog note outlining the integration steps into the Kubernetes/Kafka VH platform.
+
+---
+
+## Getting Started (For Developers)
+
+To ensure the integrity of the research project and a smooth collaboration process, please follow these initial setup steps carefully after cloning the repository.
 
 ### 1. Create a `dev` Branch
 
@@ -33,7 +100,7 @@ To enforce branch protection for the `main` branch:
     - Enable "**Require approvals**".
 7.  Click **Create** to save the rule.
 
-## Contribution Workflow for External Collaborators
+## Contribution Workflow
 
 For students and researchers outside of the core project organization, collaboration is managed through forks and pull requests. This ensures that all contributions are reviewed before being integrated.
 
@@ -59,9 +126,9 @@ This project adheres to the **Project-Driven Creation (PMC)** methodology, a fra
 
 - [A Comprehensive Guide to Project Planning with Project-Driven Creation (PMC)](docs/project-driven-creation-PMC.md)
 
-## Project Page Customization
+## Project Page
 
-This template also includes a pre-built academic project page.
+This project includes a pre-built academic project page in the `docs/` folder. You can customize it to showcase the project's progress and findings.
 
 ### Features
 
@@ -85,7 +152,7 @@ To ensure your project page is complete, make sure you update the following in `
 
 ## Acknowledgements
 
-This template was adapted from the [Academic Project Page Template](https://github.com/eliahuhorwitz/Academic-project-page-template) by Eliahu Horwitz, which was in turn inspired by the [Nerfies](https://nerfies.github.io/) project page.
+This repository template was adapted from the [Academic Project Page Template](https://github.com/eliahuhorwitz/Academic-project-page-template) by Eliahu Horwitz, which was in turn inspired by the [Nerfies](https://nerfies.github.io/) project page.
 
 ## License
 
