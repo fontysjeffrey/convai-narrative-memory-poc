@@ -2,6 +2,8 @@
 
 This repository contains the proof-of-concept (PoC) for a research project exploring a new paradigm for virtual human memory. Instead of relying on brittle, fixed personality traits, we investigate an emergent identity shaped by stories and experiences over time.
 
+![Narrative Memory for Virtual Humans](docs/static/images/narrative-memory.png)
+
 ## The Challenge
 
 Most virtual humans simulate “personality” with fixed trait sliders. That’s brittle, forgetful, and hard to scale across use-cases. We propose a leaner paradigm: identity emerging from stories over time. A small set of durable event-facts (“anchors”) supports living retellings (“flux”) that adapt to context while staying coherent.
