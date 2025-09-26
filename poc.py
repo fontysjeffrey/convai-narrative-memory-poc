@@ -2,6 +2,7 @@ import datetime
 import time
 from typing import Dict, Tuple, Any
 import litellm
+import random
 
 # --- 1. Core Temporal Model ---
 # Based on our discussion of natural human temporal landmarks.
@@ -21,22 +22,19 @@ def get_temporal_style(elapsed_seconds: float) -> str:
             return style
     return "some_time_ago"
 
-# --- 2. The Train-Pause Story (Our PoC Scenario) ---
-# This is the core "anchor" fact that will be used to generate stories.
-STORY_ANCHOR = "On a morning train to Amsterdam, I was reading about AI when there was a 15-minute delay, which made me feel frustrated about an important meeting."
+# --- 2. Sample Memories ---
+# A list of tuples, each containing an "anchor" fact and its primary emotion.
+MEMORIES_TO_CREATE = [
+    ("On a morning train to Amsterdam, I was reading about AI when there was a 15-minute delay, which made me feel frustrated about an important meeting.", "frustration"),
+    ("I was at a park when a friendly dog dropped its ball at my feet, wanting to play fetch. It was a moment of pure, unexpected joy.", "joy"),
+    ("Walking home late one night, I saw what I thought was a weird shadow, but it turned out to be a peacock, fanning its tail in the moonlight. It was completely surreal and surprising.", "surprise"),
+    ("I tried to bake a cake, but I confused salt for sugar. It was a hilarious disaster.", "amusement")
+]
 
-def generate_story_variant(anchor: str, style: str) -> str:
+def generate_story_variant(anchor: str, style: str, emotion: str) -> str:
     """Generates a story variant using an LLM."""
     
-    prompt_map = {
-        "immediate": "You are still feeling the frustration and annoyance from this event. Retell the story with vivid, immediate details, focusing on your feelings and sensory experiences. Use the present or very recent past tense. Keep it brief, just two or three sentences.",
-        "recent": "The event happened in the last couple of days. The memory is still clear, but the intense emotion has faded. Retell the story focusing on the disruption it caused to your day. Keep it brief, just two or three sentences.",
-        "last_week": "The event happened last week. The details are becoming fuzzier. Retell the story as a general anecdote about a common frustration, like a typical commuter problem. Keep it brief, just two or three sentences.",
-        "recently": "The event happened in the last couple of months. The specific emotions are gone, and you've started to reflect on it. Retell the story in a more philosophical way, perhaps focusing on a lesson learned or a broader observation about life. Keep it brief, just two or three sentences.",
-        "some_time_ago": "The event happened a long time ago. It's now a distant memory. Retell the story with a sense of nostalgia or detachment, focusing on a single, memorable detail or feeling that has stuck with you. Keep it brief, just two or three sentences."
-    }
-
-    system_prompt = prompt_map.get(style, prompt_map["some_time_ago"])
+    system_prompt = f"Retell the following memory from a '{style}' perspective, embodying the feeling of {emotion}. Keep it brief, just two or three sentences."
     
     try:
         response = litellm.completion(
@@ -50,15 +48,16 @@ def generate_story_variant(anchor: str, style: str) -> str:
     except Exception as e:
         print(f"Error generating story with LLM: {e}")
         # Fallback to a simple string if LLM fails
-        return f"I remember a train delay... It was frustrating. ({style})"
+        return f"I remember something about... {anchor[:20]}... ({style})"
 
 # --- 3. Simple Memory System ---
 
 class Memory:
     """A simple class to represent a single memory event."""
-    def __init__(self, anchor: str):
+    def __init__(self, anchor: str, emotion: str):
         self.timestamp: float = time.time()
         self.anchor: str = anchor
+        self.emotion: str = emotion
         self.access_count: int = 0
 
     def retell(self) -> str:
@@ -68,18 +67,27 @@ class Memory:
         style = get_temporal_style(elapsed_seconds)
         
         print(f"--- Retelling (style: {style}, {self.access_count} access(es)) ---")
-        return generate_story_variant(self.anchor, style)
+        return generate_story_variant(self.anchor, style, self.emotion)
 
 class MemorySystem:
     """A simple system to hold and manage memories."""
     def __init__(self):
         self.memories: list[Memory] = []
 
-    def add_memory(self, anchor: str):
-        print("\n=== New Memory Created ===")
-        memory = Memory(anchor)
+    def add_memory(self, anchor: str, emotion: str):
+        print(f"\n=== New Memory Created (Emotion: {emotion}) ===")
+        memory = Memory(anchor, emotion)
         self.memories.append(memory)
         return memory
+    
+    def recall_random_memory(self) -> str:
+        """Picks a random memory and retells it."""
+        if not self.memories:
+            return "I don't have any memories to share right now."
+        
+        chosen_memory = random.choice(self.memories)
+        print(f"\n--- Recalling a memory (Anchor: '{chosen_memory.anchor[:40]}...') ---")
+        return chosen_memory.retell()
 
 # --- 4. Simulation ---
 
@@ -87,32 +95,35 @@ def run_simulation():
     """Runs a simulation of memory creation and retelling over time."""
     virtual_human_memory = MemorySystem()
 
-    # Create the initial memory of the train event
-    train_memory = virtual_human_memory.add_memory(STORY_ANCHOR)
+    # --- Create a backlog of memories from the "past" ---
+    print("--- Populating with past memories ---")
     
-    # --- Simulate retelling at different time intervals ---
+    # Frustrating memory from last week
+    mem1 = virtual_human_memory.add_memory(MEMORIES_TO_CREATE[0][0], MEMORIES_TO_CREATE[0][1])
+    mem1.timestamp -= 7 * 24 * 3600  # Age it by 1 week
+
+    # Joyful memory from a month ago
+    mem2 = virtual_human_memory.add_memory(MEMORIES_TO_CREATE[1][0], MEMORIES_TO_CREATE[1][1])
+    mem2.timestamp -= 30 * 24 * 3600 # Age it by 30 days
     
-    # 1. Immediate retelling (a few seconds later)
-    print(f"Time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(train_memory.retell())
-
-    # 2. Recent retelling (simulating 1 day later)
-    print("\n...simulating 1 day passing...")
-    train_memory.timestamp -= 24 * 3600  # Manually age the memory
-    print(f"Time: {(datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')}")
-    print(train_memory.retell())
-
-    # 3. Last Week retelling (simulating 7 days later)
-    print("\n...simulating 6 more days passing...")
-    train_memory.timestamp -= 6 * 24 * 3600 # Manually age it further
-    print(f"Time: {(datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d %H:%M:%S')}")
-    print(train_memory.retell())
-
-    # 4. Some Time Ago retelling (simulating 3 months later)
-    print("\n...simulating ~3 months passing...")
-    train_memory.timestamp -= 90 * 24 * 3600 # Manually age it further
-    print(f"Time: {(datetime.datetime.now() - datetime.timedelta(days=97)).strftime('%Y-%m-%d %H:%M:%S')}")
-    print(train_memory.retell())
+    # Surprising memory from yesterday
+    mem3 = virtual_human_memory.add_memory(MEMORIES_TO_CREATE[2][0], MEMORIES_TO_CREATE[2][1])
+    mem3.timestamp -= 1 * 24 * 3600 # Age it by 1 day
+    
+    # --- Simulate a conversation by recalling memories and creating new ones ---
+    print("\n\n--- Starting conversation simulation ---")
+    for i in range(5):
+        print(f"\n--- Turn {i+1} ---")
+        
+        # On turn 3, something new happens!
+        if i == 2:
+            print("\n>>> A new event occurs! Creating a new memory... <<<")
+            new_memory_data = MEMORIES_TO_CREATE[3]
+            virtual_human_memory.add_memory(new_memory_data[0], new_memory_data[1])
+        
+        print(f"Time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(virtual_human_memory.recall_random_memory())
+        time.sleep(1) # a small pause between turns
 
 
 if __name__ == "__main__":
