@@ -22,18 +22,19 @@ def get_temporal_style(elapsed_seconds: float) -> str:
     return "some_time_ago"
 
 # --- 2. The Train-Pause Story (Our PoC Scenario) ---
-# This is the core "anchor" fact that will be used to generate stories.
+# This is the core "anchor" fact and its primary emotion.
 STORY_ANCHOR = "On a morning train to Amsterdam, I was reading about AI when there was a 15-minute delay, which made me feel frustrated about an important meeting."
+STORY_EMOTION = "frustration"
 
-def generate_story_variant(anchor: str, style: str) -> str:
+def generate_story_variant(anchor: str, style: str, emotion: str) -> str:
     """Generates a story variant using an LLM."""
     
     prompt_map = {
-        "immediate": "You are still feeling the frustration and annoyance from this event. Retell the story with vivid, immediate details, focusing on your feelings and sensory experiences. Use the present or very recent past tense. Keep it brief, just two or three sentences.",
-        "recent": "The event happened in the last couple of days. The memory is still clear, but the intense emotion has faded. Retell the story focusing on the disruption it caused to your day. Keep it brief, just two or three sentences.",
-        "last_week": "The event happened last week. The details are becoming fuzzier. Retell the story as a general anecdote about a common frustration, like a typical commuter problem. Keep it brief, just two or three sentences.",
-        "recently": "The event happened in the last couple of months. The specific emotions are gone, and you've started to reflect on it. Retell the story in a more philosophical way, perhaps focusing on a lesson learned or a broader observation about life. Keep it brief, just two or three sentences.",
-        "some_time_ago": "The event happened a long time ago. It's now a distant memory. Retell the story with a sense of nostalgia or detachment, focusing on a single, memorable detail or feeling that has stuck with you. Keep it brief, just two or three sentences."
+        "immediate": f"The primary emotion you felt during this event was {emotion}. You are still feeling this emotion intensely. Retell the story with vivid, immediate details, focusing on your feelings and sensory experiences. Use the present or very recent past tense. Keep it brief, just two or three sentences.",
+        "recent": f"The primary emotion you felt during this event was {emotion}. The memory is still clear, but the intense emotion has faded. Retell the story, focusing on what happened and its immediate consequences. Keep it brief, just two or three sentences.",
+        "last_week": f"The primary emotion you felt during this event was {emotion}. The details are becoming fuzzier. Retell the story as a general anecdote, perhaps touching on the feeling of {emotion}. Keep it brief, just two or three sentences.",
+        "recently": f"The primary emotion you felt during this event was {emotion}. The specific feelings are gone, and you've started to reflect on it. Retell the story in a more philosophical way, perhaps focusing on a lesson learned from feeling {emotion}. Keep it brief, just two or three sentences.",
+        "some_time_ago": f"The primary emotion you felt during this event was {emotion}. It's now a distant memory. Retell the story with a sense of nostalgia or detachment, perhaps mentioning the faint echo of {emotion} that has stuck with you. Keep it brief, just two or three sentences."
     }
 
     system_prompt = prompt_map.get(style, prompt_map["some_time_ago"])
@@ -56,9 +57,10 @@ def generate_story_variant(anchor: str, style: str) -> str:
 
 class Memory:
     """A simple class to represent a single memory event."""
-    def __init__(self, anchor: str):
+    def __init__(self, anchor: str, emotion: str):
         self.timestamp: float = time.time()
         self.anchor: str = anchor
+        self.emotion: str = emotion
         self.access_count: int = 0
 
     def retell(self) -> str:
@@ -68,16 +70,16 @@ class Memory:
         style = get_temporal_style(elapsed_seconds)
         
         print(f"--- Retelling (style: {style}, {self.access_count} access(es)) ---")
-        return generate_story_variant(self.anchor, style)
+        return generate_story_variant(self.anchor, style, self.emotion)
 
 class MemorySystem:
     """A simple system to hold and manage memories."""
     def __init__(self):
         self.memories: list[Memory] = []
 
-    def add_memory(self, anchor: str):
+    def add_memory(self, anchor: str, emotion: str):
         print("\n=== New Memory Created ===")
-        memory = Memory(anchor)
+        memory = Memory(anchor, emotion)
         self.memories.append(memory)
         return memory
 
@@ -88,7 +90,7 @@ def run_simulation():
     virtual_human_memory = MemorySystem()
 
     # Create the initial memory of the train event
-    train_memory = virtual_human_memory.add_memory(STORY_ANCHOR)
+    train_memory = virtual_human_memory.add_memory(STORY_ANCHOR, STORY_EMOTION)
     
     # --- Simulate retelling at different time intervals ---
     
