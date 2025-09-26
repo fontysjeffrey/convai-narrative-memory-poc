@@ -1,6 +1,7 @@
 import datetime
 import time
 from typing import Dict, Tuple, Any
+import litellm
 
 # --- 1. Core Temporal Model ---
 # Based on our discussion of natural human temporal landmarks.
@@ -21,24 +22,43 @@ def get_temporal_style(elapsed_seconds: float) -> str:
     return "some_time_ago"
 
 # --- 2. The Train-Pause Story (Our PoC Scenario) ---
-# Here we define the core "anchor" fact and the different "flux" versions
-# of the story for each temporal style.
-TRAIN_STORY_DATA: Dict[str, str] = {
-    "anchor": "On a morning train to Amsterdam, I was reading about AI when there was a 15-minute delay, which made me feel frustrated about an important meeting.",
-    "immediate": "God, I'm still annoyed about this morning's train. The 8:47 to Amsterdam - you know, the one I always take? We're sitting there, I'm trying to read this fascinating article about AI bias in hiring systems, when suddenly the conductor comes on: 'Ladies and gentlemen, due to a signal failure ahead, we'll have a 15-minute delay.' Fifteen minutes! I kept checking my phone, thinking about my 10 AM meeting with the board. My coffee was getting cold, and I could feel that familiar knot in my stomach...",
-    "recent": "Yesterday's commute was such a mess. I was on my usual morning train, reading something interesting - I think it was about AI ethics? Anyway, we got delayed for like fifteen minutes because of some signal problem. Really threw off my whole morning schedule. I hate how these little disruptions can completely derail your day, you know?",
-    "last_week": "Last week I had one of those typical commuter nightmares - train delays right when you need to be somewhere important. I was trying to read, but couldn't focus because we were just sitting there waiting. It's funny how these small frustrations can stick with you longer than they should.",
-    "recently": "I was thinking about how unpredictable public transport can be. Recently I had this experience where a simple delay reminded me how little control we actually have over our daily routines. I was reading something thought-provoking at the time, which made the contrast even more stark - here I am contemplating big ideas while being held hostage by a signal failure.",
-    "some_time_ago": "I remember once being on a train that got delayed, and it struck me how these moments of forced stillness can actually be gifts. There I was, irritated about being late, but also deeply absorbed in what I was reading. It made me realize how rarely we just... sit with our thoughts anymore."
-}
+# This is the core "anchor" fact that will be used to generate stories.
+STORY_ANCHOR = "On a morning train to Amsterdam, I was reading about AI when there was a 15-minute delay, which made me feel frustrated about an important meeting."
+
+def generate_story_variant(anchor: str, style: str) -> str:
+    """Generates a story variant using an LLM."""
+    
+    prompt_map = {
+        "immediate": "You are still feeling the frustration and annoyance from this event. Retell the story with vivid, immediate details, focusing on your feelings and sensory experiences. Use the present or very recent past tense. Keep it brief, just two or three sentences.",
+        "recent": "The event happened in the last couple of days. The memory is still clear, but the intense emotion has faded. Retell the story focusing on the disruption it caused to your day. Keep it brief, just two or three sentences.",
+        "last_week": "The event happened last week. The details are becoming fuzzier. Retell the story as a general anecdote about a common frustration, like a typical commuter problem. Keep it brief, just two or three sentences.",
+        "recently": "The event happened in the last couple of months. The specific emotions are gone, and you've started to reflect on it. Retell the story in a more philosophical way, perhaps focusing on a lesson learned or a broader observation about life. Keep it brief, just two or three sentences.",
+        "some_time_ago": "The event happened a long time ago. It's now a distant memory. Retell the story with a sense of nostalgia or detachment, focusing on a single, memorable detail or feeling that has stuck with you. Keep it brief, just two or three sentences."
+    }
+
+    system_prompt = prompt_map.get(style, prompt_map["some_time_ago"])
+    
+    try:
+        response = litellm.completion(
+            model="ollama/gpt-oss:latest", 
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Here is the core memory: {anchor}"}
+            ]
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"Error generating story with LLM: {e}")
+        # Fallback to a simple string if LLM fails
+        return f"I remember a train delay... It was frustrating. ({style})"
 
 # --- 3. Simple Memory System ---
 
 class Memory:
     """A simple class to represent a single memory event."""
-    def __init__(self, data: Dict[str, str]):
+    def __init__(self, anchor: str):
         self.timestamp: float = time.time()
-        self.data: Dict[str, str] = data
+        self.anchor: str = anchor
         self.access_count: int = 0
 
     def retell(self) -> str:
@@ -48,16 +68,16 @@ class Memory:
         style = get_temporal_style(elapsed_seconds)
         
         print(f"--- Retelling (style: {style}, {self.access_count} access(es)) ---")
-        return self.data.get(style, self.data["some_time_ago"])
+        return generate_story_variant(self.anchor, style)
 
 class MemorySystem:
     """A simple system to hold and manage memories."""
     def __init__(self):
         self.memories: list[Memory] = []
 
-    def add_memory(self, data: Dict[str, str]):
+    def add_memory(self, anchor: str):
         print("\n=== New Memory Created ===")
-        memory = Memory(data)
+        memory = Memory(anchor)
         self.memories.append(memory)
         return memory
 
@@ -68,7 +88,7 @@ def run_simulation():
     virtual_human_memory = MemorySystem()
 
     # Create the initial memory of the train event
-    train_memory = virtual_human_memory.add_memory(TRAIN_STORY_DATA)
+    train_memory = virtual_human_memory.add_memory(STORY_ANCHOR)
     
     # --- Simulate retelling at different time intervals ---
     
