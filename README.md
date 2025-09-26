@@ -67,6 +67,44 @@ Post-PoC, the plan is to package the retell service as a stateless container wit
 - A brief slide deck for presentations.
 - A backlog note outlining the integration steps into the Kubernetes/Kafka VH platform.
 
+## Running the Proof-of-Concept
+
+The core logic of this PoC is contained in the `poc.py` script. It simulates the creation of a memory and how it's retold over different time intervals.
+
+### How to Run
+
+To run the simulation, simply execute the script from your terminal:
+
+```bash
+python poc.py
+```
+
+### Expected Output
+
+Running the script will print a simulation of a memory being retold at different points in time, demonstrating the "anchor" and "flux" concepts in action. The output will look like this:
+
+```
+=== New Memory Created ===
+Time: 2025-09-26 13:32:02
+--- Retelling (style: immediate, 1 access(es)) ---
+God, I'm still annoyed about this morning's train. The 8:47 to Amsterdam - you know, the one I always take? We're sitting there, I'm trying to read this fascinating article about AI bias in hiring systems, when suddenly the conductor comes on: 'Ladies and gentlemen, due to a signal failure ahead, we'll have a 15-minute delay.' Fifteen minutes! I kept checking my phone, thinking about my 10 AM meeting with the board. My coffee was getting cold, and I could feel that familiar knot in my stomach...
+
+...simulating 1 day passing...
+Time: 2025-09-25 13:32:02
+--- Retelling (style: recent, 2 access(es)) ---
+Yesterday's commute was such a mess. I was on my usual morning train, reading something interesting - I think it was about AI ethics? Anyway, we got delayed for like fifteen minutes because of some signal problem. Really threw off my whole morning schedule. I hate how these little disruptions can completely derail your day, you know?
+
+...simulating 6 more days passing...
+Time: 2025-09-19 13:32:02
+--- Retelling (style: last_week, 3 access(es)) ---
+Last week I had one of those typical commuter nightmares - train delays right when you need to be somewhere important. I was trying to read, but couldn't focus because we were just sitting there waiting. It's funny how these small frustrations can stick with you longer than they should.
+
+...simulating ~3 months passing...
+Time: 2025-06-21 13:32:02
+--- Retelling (style: some_time_ago, 4 access(es)) ---
+I remember once being on a train that got delayed, and it struck me how these moments of forced stillness can actually be gifts. There I was, irritated about being late, but also deeply absorbed in what I was reading. It made me realize how rarely we just... sit with our thoughts anymore.
+```
+
 ---
 
 ## Getting Started (For Developers)
