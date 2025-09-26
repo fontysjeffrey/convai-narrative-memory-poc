@@ -27,21 +27,14 @@ def get_temporal_style(elapsed_seconds: float) -> str:
 MEMORIES_TO_CREATE = [
     ("On a morning train to Amsterdam, I was reading about AI when there was a 15-minute delay, which made me feel frustrated about an important meeting.", "frustration"),
     ("I was at a park when a friendly dog dropped its ball at my feet, wanting to play fetch. It was a moment of pure, unexpected joy.", "joy"),
-    ("Walking home late one night, I saw what I thought was a weird shadow, but it turned out to be a peacock, fanning its tail in the moonlight. It was completely surreal and surprising.", "surprise")
+    ("Walking home late one night, I saw what I thought was a weird shadow, but it turned out to be a peacock, fanning its tail in the moonlight. It was completely surreal and surprising.", "surprise"),
+    ("I tried to bake a cake, but I confused salt for sugar. It was a hilarious disaster.", "amusement")
 ]
 
 def generate_story_variant(anchor: str, style: str, emotion: str) -> str:
     """Generates a story variant using an LLM."""
     
-    prompt_map = {
-        "immediate": f"You are retelling a memory where you felt intense {emotion}. Embody that feeling. Retell the story with vivid, immediate details, focusing on your feelings and sensory experiences. Use the present or very recent past tense. Keep it brief, just two or three sentences.",
-        "recent": f"You are retelling a memory where you felt {emotion}. The intense emotion has faded, but it still colors the memory. Retell the story, focusing on what happened and its immediate consequences from that emotional perspective. Keep it brief, just two or three sentences.",
-        "last_week": f"You are retelling a memory where the main feeling was {emotion}. The details are becoming fuzzier. Retell it as a general anecdote, colored by the memory of that {emotion}. Keep it brief, just two or three sentences.",
-        "recently": f"You are retelling a memory where you felt {emotion}. The specific feelings are gone, and you've started to reflect on it. Retell the story in a more philosophical way, perhaps focusing on a lesson learned from feeling that way. Keep it brief, just two or three sentences.",
-        "some_time_ago": f"You are retelling a distant memory where you once felt {emotion}. The feeling is now just a faint echo. Retell the story with a sense of nostalgia or detachment, colored by that distant emotion. Keep it brief, just two or three sentences."
-    }
-
-    system_prompt = prompt_map.get(style, prompt_map["some_time_ago"])
+    system_prompt = f"Retell the following memory from a '{style}' perspective, embodying the feeling of {emotion}. Keep it brief, just two or three sentences."
     
     try:
         response = litellm.completion(
@@ -55,7 +48,7 @@ def generate_story_variant(anchor: str, style: str, emotion: str) -> str:
     except Exception as e:
         print(f"Error generating story with LLM: {e}")
         # Fallback to a simple string if LLM fails
-        return f"I remember a train delay... It was frustrating. ({style})"
+        return f"I remember something about... {anchor[:20]}... ({style})"
 
 # --- 3. Simple Memory System ---
 
@@ -117,10 +110,17 @@ def run_simulation():
     mem3 = virtual_human_memory.add_memory(MEMORIES_TO_CREATE[2][0], MEMORIES_TO_CREATE[2][1])
     mem3.timestamp -= 1 * 24 * 3600 # Age it by 1 day
     
-    # --- Simulate a conversation by recalling memories randomly ---
+    # --- Simulate a conversation by recalling memories and creating new ones ---
     print("\n\n--- Starting conversation simulation ---")
-    for i in range(3):
+    for i in range(5):
         print(f"\n--- Turn {i+1} ---")
+        
+        # On turn 3, something new happens!
+        if i == 2:
+            print("\n>>> A new event occurs! Creating a new memory... <<<")
+            new_memory_data = MEMORIES_TO_CREATE[3]
+            virtual_human_memory.add_memory(new_memory_data[0], new_memory_data[1])
+        
         print(f"Time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print(virtual_human_memory.recall_random_memory())
         time.sleep(1) # a small pause between turns
