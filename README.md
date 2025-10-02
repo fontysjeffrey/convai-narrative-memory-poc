@@ -47,10 +47,12 @@ docker compose logs -f reteller
 
 ## Documentation
 
+- **[ANCHOR_FLUX_MODEL.md](ANCHOR_FLUX_MODEL.md)**: **Start here!** Core conceptual model (anchors + flux = identity)
 - **[ARCHITECTURE.md](ARCHITECTURE.md)**: System architecture, components, and design decisions
 - **[RESEARCH_PROPOSAL.md](RESEARCH_PROPOSAL.md)**: 12-week research plan with validated PoC results
 - **[EXPERIMENTAL_METHODOLOGY.md](EXPERIMENTAL_METHODOLOGY.md)**: Complete experimental setup, procedures, and reproducibility
 - **[FORGETTING_CURVE.md](FORGETTING_CURVE.md)**: Ebbinghaus forgetting curve theory and implementation
+- **[FEASIBILITY_ANALYSIS.md](FEASIBILITY_ANALYSIS.md)**: 12-week plan feasibility assessment
 - **[ENV_CONFIG.md](ENV_CONFIG.md)**: Environment configuration for embedding and LLM models
 
 ## Notes

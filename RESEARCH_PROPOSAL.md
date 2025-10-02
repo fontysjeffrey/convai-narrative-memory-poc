@@ -11,7 +11,9 @@
 
 ## Executive Summary
 
-This proposal presents a **validated proof-of-concept** for integrating the Ebbinghaus forgetting curve into conversational AI memory systems, with a **12-week research plan** to extend this foundation into a production-grade multi-agent Virtual Human platform.
+This proposal presents a **validated proof-of-concept** for the **Anchor-and-Flux Memory Model**—a paradigm where virtual human identity emerges from stories over time, not fixed personality traits. We've integrated the Ebbinghaus forgetting curve into conversational AI memory, with a **12-week research plan** to extend this foundation into a production-grade multi-agent Virtual Human platform.
+
+> **Core Concept:** Anchors (durable event-facts) + Flux (adaptive retellings) = Authentic, evolving identity. See [ANCHOR_FLUX_MODEL.md](ANCHOR_FLUX_MODEL.md) for the conceptual foundation.
 
 **What We've Built (PoC):**
 
@@ -27,6 +29,7 @@ This proposal presents a **validated proof-of-concept** for integrating the Ebbi
 - Security and privacy-preserving memory management
 - Scalability testing and production hardening
 - Integration with existing Virtual Human platform
+- Production deployment strategies (GPU vs. API-based infrastructure)
 
 **Expected Outcomes:**
 
@@ -734,10 +737,12 @@ This demonstrates how λ = 0.002 allows important old memories to remain accessi
 **Documentation:**
 
 - `README.md` - Quick start guide
+- `ANCHOR_FLUX_MODEL.md` - **Core conceptual model** (start here!)
 - `ARCHITECTURE.md` - System design and components
 - `RESEARCH_PROPOSAL.md` - This document (12-week research plan)
 - `EXPERIMENTAL_METHODOLOGY.md` - Complete validation methodology
 - `FORGETTING_CURVE.md` - Ebbinghaus curve theory and implementation
+- `FEASIBILITY_ANALYSIS.md` - 12-week plan feasibility assessment
 - `ENV_CONFIG.md` - Configuration options
 - `validation_results.json` - Raw experimental data
 
@@ -762,6 +767,6 @@ docker compose run --rm tools python /app/convai_narrative_memory_poc/tools/vali
 
 **Document Version:** 1.0  
 **Date:** October 2, 2025  
-**Authors:** Lonn van Bokhorst, Coen Crombach 
+**Authors:** Lonn van Bokhorst, Coen Crombach
 **Organization:** Research Group IxD, Fontys University of Applied Sciences
 **Contact:** Via an issue on the repository
