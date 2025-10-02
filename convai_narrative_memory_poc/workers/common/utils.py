@@ -21,5 +21,4 @@ def human_age(delta: dt.timedelta) -> str:
     if days < 1: return "yesterday"
     if days < 7: return f"{days} days ago"
     if days < 30: return f"{days//7} weeks ago"
-    if days < 365: return f"{days//30} months ago"
-    return f"{days//365} years ago"
+    return f"{days // 30} months ago" if days < 365 else f"{days // 365} years ago"

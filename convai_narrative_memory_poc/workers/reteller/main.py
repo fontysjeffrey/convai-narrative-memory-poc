@@ -78,8 +78,7 @@ def main():
             beats = payload["beats"]
             # Build prompt from beats (no knobs, just perceived ages)
             lines = ["I’m recalling these moments; each ends with how long ago it feels:"]
-            for b in beats:
-                lines.append(f"- {b['text']} ({b['perceived_age']})")
+            lines.extend(f"- {b['text']} ({b['perceived_age']})" for b in beats)
             lines.append("Please retell it concisely like a human memory—fewer crisp details when older, keep gist intact.")
             prompt = "\n".join(lines)
             text = None
