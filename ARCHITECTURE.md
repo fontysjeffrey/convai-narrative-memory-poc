@@ -432,48 +432,6 @@ QDRANT_COLLECTION=anchors
 
 **Configuration file**: Place these in a `.env` file in the same directory as `docker-compose.yml`, or export them as environment variables. See `ENV_CONFIG.md` for detailed examples and troubleshooting.
 
-## Production Deployment
-
-### Infrastructure Requirements
-
-The system supports multiple deployment strategies based on available resources:
-
-#### Option A: GPU-Powered (Recommended)
-
-- **Hardware**: NVIDIA A6000 (48GB VRAM) or RTX 4090 (24GB VRAM)
-- **Models**: Local Ollama with BGE-M3 + Phi4/Qwen3
-- **Benefits**: Zero API costs, data privacy, low latency, offline capable
-- **Cost**: $1,600-4,500 setup, $200-400/month hosting
-
-#### Option B: API-Based (Fallback)
-
-- **Services**: OpenAI, Groq, Google Gemini, Anthropic
-- **Models**: text-embedding-3-large + GPT-4o-mini/Llama3-70B
-- **Benefits**: No GPU needed, latest models, pay-per-use
-- **Cost**: $500-2,000/month (high volume)
-
-#### Option C: Hybrid (Best of Both)
-
-- **Embeddings**: Local (BGE-M3/Nomic-embed-text)
-- **LLM**: API-based (OpenAI/Groq/Gemini)
-- **Benefits**: Cost-effective, privacy-preserving, flexible
-- **Cost**: $400-600/month (moderate volume)
-
-### Scaling Considerations
-
-**Memory Requirements:**
-
-- Minimum: 16GB VRAM (Phi4 + BGE-M3)
-- Recommended: 24GB VRAM (RTX 4090)
-- Optimal: 48GB VRAM (A6000)
-
-**Model Selection:**
-
-- **BGE-M3**: Multilingual, 1.2GB, requires 8GB+ VRAM
-- **Nomic-embed-text**: English-optimized, 274MB, requires 4GB+ VRAM
-- **Phi4**: Recommended LLM, 14GB, fast and high-quality
-- **Qwen3**: Multilingual LLM, 8GB, good for international use
-
 ## Future Enhancements
 
 ### Near-term
@@ -482,8 +440,6 @@ The system supports multiple deployment strategies based on available resources:
 2. **Memory consolidation**: Merge similar memories that occur close in time
 3. **Forgetting mechanisms**: Actively remove or archive very old, low-activation memories
 4. **Configuration UI**: Web interface for tuning decay rates, activation thresholds, and model selection
-5. **GPU resource management**: Load balancing across multiple GPUs
-6. **API fallback mechanisms**: Automatic failover to API services when GPU unavailable
 
 ### Medium-term
 

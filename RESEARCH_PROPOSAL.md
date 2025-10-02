@@ -29,7 +29,6 @@ This proposal presents a **validated proof-of-concept** for the **Anchor-and-Flu
 - Security and privacy-preserving memory management
 - Scalability testing and production hardening
 - Integration with existing Virtual Human platform
-- Production deployment strategies (GPU vs. API-based infrastructure)
 
 **Expected Outcomes:**
 
@@ -443,8 +442,8 @@ Extend the validated PoC into a production-grade multi-agent memory system for t
 
 **Compute:**
 
-- Local: Ollama (BGE-M3, Phi4) on GPU workstation
-- Cloud: Optional OpenAI API for baseline comparisons
+- Local GPU (production): NVIDIA RTX 4090 or A6000 running Ollama (BGE-M3 embeddings + Phi4/Qwen3 retelling)
+- Cloud/API fallback (if no GPU available): Groq, Gemini, or OpenAI (embeddings + LLM) — higher latency/cost but zero hardware footprint
 - Infrastructure: Docker + Kafka + Qdrant (already provisioned)
 
 **Data:**
