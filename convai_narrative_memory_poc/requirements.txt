@@ -1,0 +1,13 @@
+qdrant-client==1.9.2
+pydantic==2.6.1
+python-dateutil==2.9.0.post0
+confluent-kafka==2.4.0
+uvicorn==0.30.1
+fastapi==0.111.0
+tqdm==4.66.4
+orjson==3.10.7
+numpy==1.26.4
+# Optional for better embeddings/NER:
+# sentence-transformers==3.0.1
+# spacy==3.7.5
+# en-core-web-sm (download model separately if you want NER)

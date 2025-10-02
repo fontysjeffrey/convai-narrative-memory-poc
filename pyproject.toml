@@ -1,0 +1,12 @@
+[project]
+name = "convai-narrative-memory-poc"
+version = "0.1.0"
+description = "A proof-of-concept for narrative memory in conversational AI."
+requires-python = ">=3.12"
+dependencies = [
+    "litellm",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
