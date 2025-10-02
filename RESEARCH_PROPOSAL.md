@@ -546,25 +546,25 @@ Extend the validated PoC into a production-grade multi-agent memory system for t
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                  Virtual Human Platform                      │
-│                                                              │
-│  ┌──────────────┐      ┌──────────────┐      ┌───────────┐ │
-│  │   Dialogue   │      │   Character  │      │  Emotion  │ │
-│  │   Manager    │◄────►│   Engine     │◄────►│  Model    │ │
-│  └──────┬───────┘      └──────────────┘      └───────────┘ │
-│         │                                                    │
+│                  Virtual Human Platform                     │
+│                                                             │
+│  ┌──────────────┐      ┌──────────────┐      ┌───────────┐  │
+│  │   Dialogue   │      │   Character  │      │  Emotion  │  │
+│  │   Manager    │◄────►│   Engine     │◄────►│  Model    │  │
+│  └──────┬───────┘      └──────────────┘      └───────────┘  │
+│         │                                                   │
 │         │ Memory API                                        │
-│         ▼                                                    │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │          NARRATIVE MEMORY SYSTEM (Our Work)          │  │
-│  │                                                       │  │
-│  │   ┌──────────┐   ┌───────────┐   ┌──────────┐      │  │
-│  │   │ Indexer  │   │ Resonance │   │ Reteller │      │  │
-│  │   └────┬─────┘   └─────┬─────┘   └────┬─────┘      │  │
-│  │        │                │               │            │  │
-│  │        └────────────────┴───────────────┘            │  │
-│  │                      Kafka + Qdrant                  │  │
-│  └──────────────────────────────────────────────────────┘  │
+│         ▼                                                   │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │          NARRATIVE MEMORY SYSTEM (Our Work)          │   │
+│  │                                                      │   │
+│  │   ┌──────────┐   ┌───────────┐   ┌──────────┐        │   │
+│  │   │ Indexer  │   │ Resonance │   │ Reteller │        │   │
+│  │   └────┬─────┘   └─────┬─────┘   └────┬─────┘        │   │
+│  │        │               │              │              │   │
+│  │        └───────────────┴──────────────┘              │   │
+│  │                      Kafka + Qdrant                  │   │
+│  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -762,6 +762,6 @@ docker compose run --rm tools python /app/convai_narrative_memory_poc/tools/vali
 
 **Document Version:** 1.0  
 **Date:** October 2, 2025  
-**Authors:** Lonn van Bokhorst, Coen  
-**Organization:** Mindlabs  
-**Contact:** [Your email/contact info]
+**Authors:** Lonn van Bokhorst, Coen Crombach 
+**Organization:** Research Group IxD, Fontys University of Applied Sciences
+**Contact:** Via an issue on the repository
