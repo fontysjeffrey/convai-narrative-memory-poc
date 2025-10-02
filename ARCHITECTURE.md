@@ -65,15 +65,20 @@ The system is built on a **microservices architecture** using **event-driven com
 **Process**:
 
 1. Consumes a memory anchor from the `anchors.write` topic
-2. Generates a semantic embedding (vector representation) of the text using a deterministic embedding function
+2. Generates a semantic embedding (vector representation) of the text using the configured embedding model:
+   - **Deterministic** (384-dim): Fast, zero dependencies, good for testing
+   - **Nomic-embed-text** (768-dim): Excellent English semantic search, 274 MB
+   - **MXBai-embed-large** (1024-dim): High-quality retrieval, 669 MB
+   - **BGE-M3** (1024-dim): **Multilingual** (100+ languages), state-of-the-art, 1.2 GB
 3. Stores the anchor in Qdrant vector database with metadata:
    - Original text
    - Timestamp (`stored_at`)
    - Emotional/importance weight (`salience`)
    - Optional metadata tags
+   - Vector dimension automatically matches the embedding model
 4. Publishes confirmation to `anchors.indexed` topic
 
-**Why embeddings?** Vector embeddings capture semantic meaning. Two sentences about similar concepts will have similar vectors even if they use different words. This enables semantic search rather than just keyword matching.
+**Key Feature**: The system automatically detects dimension mismatches and recreates the Qdrant collection when switching embedding models, ensuring compatibility.
 
 ### 3. Qdrant (Vector Database)
 
@@ -85,8 +90,6 @@ The system is built on a **microservices architecture** using **event-driven com
 - **Filtered search**: Can combine vector similarity with metadata filters (e.g., "find similar memories from last month")
 - **Payload storage**: Stores the original text and metadata alongside the vectors
 - **Fast retrieval**: Optimized for sub-second search even with millions of vectors
-
-**Why not a traditional database?** Traditional databases excel at exact matching ("find where name = 'John'") but struggle with semantic similarity. Qdrant is purpose-built for "find memories that mean something similar to this query."
 
 ### 4. Resonance Worker
 
@@ -128,18 +131,25 @@ The system is built on a **microservices architecture** using **event-driven com
 **Process**:
 
 1. Consumes recall response containing beats (text snippets + perceived ages + activations)
-2. Constructs a narrative from the beats
-3. **Three modes of operation**:
-   - **Stub mode** (default): Simple concatenation with age annotations
-   - **Ollama mode**: Uses local LLM for narrative reconstruction
-   - **OpenAI mode**: Uses GPT models for sophisticated narrative generation
+2. Constructs a prompt from the beats with age context
+3. **Three modes of operation** (tried in order: OpenAI → Ollama → Stub):
+   - **OpenAI mode**: Uses GPT models (gpt-4o, gpt-4o-mini) for sophisticated narrative generation
+   - **Ollama mode**: Uses local LLMs for privacy-preserving narrative reconstruction:
+     - **Phi4** (9.1 GB): Fast, direct narratives without reasoning overhead (recommended)
+     - **Qwen3** (5.2 GB): Excellent reasoning, includes `<think>` tags (auto-filtered)
+     - **Llama3** (4.7 GB): Good all-rounder, balanced performance
+     - **Gemma3** (8-12 GB): High-quality output
+   - **Stub mode** (fallback): Simple concatenation with age annotations and detail reduction for older memories
 4. Publishes the final narrative to `retell.response`
 
 **Design philosophy**: The reteller is intentionally modular. The system works without LLM involvement (stub mode), but can be enhanced with increasingly sophisticated language models. This allows for:
 
-- Fast prototyping without API costs
-- Privacy-preserving local inference
-- Production deployment with powerful cloud models
+- **Fast prototyping** without API costs (stub mode)
+- **Privacy-preserving** local inference (Ollama)
+- **Production deployment** with powerful cloud models (OpenAI)
+- **Configurable models** via environment variables (no code changes needed)
+
+**Special handling**: Qwen3's chain-of-thought reasoning (enclosed in `<think>` tags) is automatically filtered out to return only the final narrative.
 
 ### 6. Tools (Client Application)
 
@@ -253,18 +263,23 @@ Let's trace a memory from creation to recall:
 
 **Trade-off**: More moving parts to deploy and monitor
 
-### 3. Deterministic Embeddings vs. API-based Embeddings
+### 3. Embedding Model Strategy
 
-**Chosen**: Simple deterministic function (for POC)  
-**Production alternative**: OpenAI embeddings, sentence-transformers, etc.
+**Implemented**: Configurable via `EMBEDDING_MODEL` environment variable  
+**Options**: `deterministic` (default), `nomic-embed-text`, `mxbai-embed-large`, `bge-m3`
 
-**Rationale for POC**:
+**Design decision**: Rather than choosing a single embedding approach, the system supports multiple models with automatic dimension handling:
 
-- Zero external dependencies
-- Predictable, reproducible for testing
-- Fast iteration without API costs
+| Model                 | Dimensions | Size   | Best For                               |
+| --------------------- | ---------- | ------ | -------------------------------------- |
+| **deterministic**     | 384        | 0 MB   | Fast testing, no dependencies          |
+| **nomic-embed-text**  | 768        | 274 MB | English semantic search, speed         |
+| **mxbai-embed-large** | 1024       | 669 MB | High-quality retrieval                 |
+| **bge-m3**            | 1024       | 1.2 GB | **Multilingual**, cross-lingual search |
 
-**Production consideration**: Real embeddings (e.g., `text-embedding-ada-002`, `all-MiniLM-L6-v2`) dramatically improve semantic search quality. This is a clear upgrade path.
+**Production consideration**: For Dutch/English mixed environments (like Fontys), **BGE-M3** is recommended as it excels at multilingual and cross-lingual retrieval. For English-only applications, `nomic-embed-text` offers the best speed/quality balance.
+
+**Technical implementation**: The indexer automatically detects vector dimension mismatches and recreates the Qdrant collection when switching models, preventing compatibility errors.
 
 ### 4. Temporal Decay Function
 
@@ -380,13 +395,51 @@ Key metrics to track in production:
 - Message throughput per topic
 - Rebalancing events
 
+## Configuration
+
+The system is fully configurable via environment variables, allowing model selection without code changes:
+
+### Embedding Configuration
+
+```bash
+# Choose your embedding model
+EMBEDDING_MODEL=bge-m3              # Options: deterministic, nomic-embed-text, mxbai-embed-large, bge-m3
+OLLAMA_BASE_URL=http://localhost:11434
+```
+
+**Recommendation**: Use `bge-m3` for multilingual applications, `nomic-embed-text` for English-only with best performance.
+
+### Retelling Configuration
+
+```bash
+# Ollama LLM for retelling
+OLLAMA_MODEL=phi4                   # Options: phi4, qwen3, llama3, gemma3:12b, etc.
+
+# Or use OpenAI (tried first if set)
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini           # Options: gpt-4o-mini, gpt-4o, gpt-3.5-turbo
+```
+
+**Recommendation**: Use `phi4` for fast, clean narratives. Use `qwen3` if you want deeper reasoning (automatically filtered). Use OpenAI for production quality.
+
+### Infrastructure Configuration
+
+```bash
+KAFKA_BOOTSTRAP=localhost:9092
+QDRANT_URL=http://localhost:6333
+QDRANT_COLLECTION=anchors
+```
+
+**Configuration file**: Place these in a `.env` file in the same directory as `docker-compose.yml`, or export them as environment variables. See `ENV_CONFIG.md` for detailed examples and troubleshooting.
+
 ## Future Enhancements
 
 ### Near-term
 
-1. **Production embeddings**: Replace deterministic embeddings with sentence-transformers
+1. ~~**Production embeddings**: Replace deterministic embeddings with sentence-transformers~~ ✅ **DONE** - Now supports BGE-M3, Nomic, and MXBai via Ollama
 2. **Memory consolidation**: Merge similar memories that occur close in time
 3. **Forgetting mechanisms**: Actively remove or archive very old, low-activation memories
+4. **Configuration UI**: Web interface for tuning decay rates, activation thresholds, and model selection
 
 ### Medium-term
 
@@ -404,10 +457,14 @@ Key metrics to track in production:
 
 This architecture demonstrates that realistic, psychologically-grounded memory systems for AI don't require monolithic models or complex prompt engineering. By separating concerns—storage, retrieval, activation dynamics, and narrative generation—we create a system that is:
 
-- **Transparent**: Every memory operation is traceable
-- **Tunable**: Psychological parameters can be adjusted without code changes
-- **Scalable**: Components scale independently based on load
+- **Transparent**: Every memory operation is traceable through Kafka event logs
+- **Tunable**: Psychological parameters and models can be adjusted via environment variables without code changes
+- **Scalable**: Components scale independently based on load (indexer, resonance, reteller can each scale horizontally)
 - **Testable**: Each component can be validated in isolation
 - **Extensible**: New memory types or recall strategies slot in naturally
+- **Multilingual**: BGE-M3 embeddings enable cross-lingual semantic search (query in English, find Dutch memories and vice versa)
+- **Production-ready**: From local testing (deterministic embeddings + stub) to production (BGE-M3 + GPT-4) with zero code changes
 
 The event-driven architecture might seem complex initially, but it provides the flexibility and robustness required for production conversational AI systems where memory isn't just retrieval—it's a dynamic, temporally-aware process that mirrors human cognition.
+
+**Current Implementation**: The system is operational with BGE-M3 multilingual embeddings (1024-dim) and Phi4 for natural narrative generation, successfully processing memories through the complete Kafka → Qdrant → Resonance → Retelling pipeline with psychologically realistic time-based decay and activation.
