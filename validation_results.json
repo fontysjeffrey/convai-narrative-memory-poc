@@ -1,0 +1,758 @@
+{
+  "timestamp": "2025-10-02T11:27:17.459481+00:00",
+  "experiments": [
+    {
+      "name": "decay_rate_comparison",
+      "data": {
+        "query": "Tell me about the demonstration and project meetings",
+        "lambda_comparisons": [
+          {
+            "lambda": 0.0005,
+            "top_3_memories": [
+              {
+                "id": 5,
+                "text_preview": "Critical system outage affecting 50+ users, required emergen...",
+                "days_ago": 180,
+                "similarity": 0.4295,
+                "salience": 2.5,
+                "decay": 0.9139,
+                "activation": 0.9812,
+                "category": "old_critical_salience"
+              },
+              {
+                "id": 1,
+                "text_preview": "Demonstrated Virtual Human to 12 Fontys colleagues in R10 at...",
+                "days_ago": 1,
+                "similarity": 0.5233,
+                "salience": 1.5,
+                "decay": 0.9995,
+                "activation": 0.7845,
+                "category": "recent_high_salience"
+              },
+              {
+                "id": 7,
+                "text_preview": "Brainstorming session for new features including multi-agent...",
+                "days_ago": 14,
+                "similarity": 0.5286,
+                "salience": 1.3,
+                "decay": 0.993,
+                "activation": 0.6823,
+                "category": "recent_creative"
+              }
+            ],
+            "all_activations": [
+              {
+                "id": 5,
+                "text_preview": "Critical system outage affecting 50+ users, required emergen...",
+                "days_ago": 180,
+                "similarity": 0.4295,
+                "salience": 2.5,
+                "decay": 0.9139,
+                "activation": 0.9812,
+                "category": "old_critical_salience"
+              },
+              {
+                "id": 1,
+                "text_preview": "Demonstrated Virtual Human to 12 Fontys colleagues in R10 at...",
+                "days_ago": 1,
+                "similarity": 0.5233,
+                "salience": 1.5,
+                "decay": 0.9995,
+                "activation": 0.7845,
+                "category": "recent_high_salience"
+              },
+              {
+                "id": 7,
+                "text_preview": "Brainstorming session for new features including multi-agent...",
+                "days_ago": 14,
+                "similarity": 0.5286,
+                "salience": 1.3,
+                "decay": 0.993,
+                "activation": 0.6823,
+                "category": "recent_creative"
+              },
+              {
+                "id": 2,
+                "text_preview": "Coffee meeting with project sponsor to discuss budget alloca...",
+                "days_ago": 30,
+                "similarity": 0.6045,
+                "salience": 1.0,
+                "decay": 0.9851,
+                "activation": 0.5955,
+                "category": "medium_normal_salience"
+              },
+              {
+                "id": 3,
+                "text_preview": "Initial project kickoff meeting where we defined the scope o...",
+                "days_ago": 270,
+                "similarity": 0.5643,
+                "salience": 1.2,
+                "decay": 0.8737,
+                "activation": 0.5917,
+                "category": "old_high_salience"
+              },
+              {
+                "id": 8,
+                "text_preview": "Attended conference talk about vector databases and semantic...",
+                "days_ago": 120,
+                "similarity": 0.5074,
+                "salience": 1.1,
+                "decay": 0.9418,
+                "activation": 0.5256,
+                "category": "old_educational"
+              },
+              {
+                "id": 6,
+                "text_preview": "Weekly standup meeting covering sprint progress and blockers...",
+                "days_ago": 7,
+                "similarity": 0.5949,
+                "salience": 0.8,
+                "decay": 0.9965,
+                "activation": 0.4743,
+                "category": "recent_routine"
+              },
+              {
+                "id": 4,
+                "text_preview": "Casual hallway conversation about the weather and weekend pl...",
+                "days_ago": 2,
+                "similarity": 0.5787,
+                "salience": 0.3,
+                "decay": 0.999,
+                "activation": 0.1734,
+                "category": "recent_low_salience"
+              }
+            ]
+          },
+          {
+            "lambda": 0.001,
+            "top_3_memories": [
+              {
+                "id": 5,
+                "text_preview": "Critical system outage affecting 50+ users, required emergen...",
+                "days_ago": 180,
+                "similarity": 0.4295,
+                "salience": 2.5,
+                "decay": 0.8353,
+                "activation": 0.8968,
+                "category": "old_critical_salience"
+              },
+              {
+                "id": 1,
+                "text_preview": "Demonstrated Virtual Human to 12 Fontys colleagues in R10 at...",
+                "days_ago": 1,
+                "similarity": 0.5233,
+                "salience": 1.5,
+                "decay": 0.999,
+                "activation": 0.7841,
+                "category": "recent_high_salience"
+              },
+              {
+                "id": 7,
+                "text_preview": "Brainstorming session for new features including multi-agent...",
+                "days_ago": 14,
+                "similarity": 0.5286,
+                "salience": 1.3,
+                "decay": 0.9861,
+                "activation": 0.6776,
+                "category": "recent_creative"
+              }
+            ],
+            "all_activations": [
+              {
+                "id": 5,
+                "text_preview": "Critical system outage affecting 50+ users, required emergen...",
+                "days_ago": 180,
+                "similarity": 0.4295,
+                "salience": 2.5,
+                "decay": 0.8353,
+                "activation": 0.8968,
+                "category": "old_critical_salience"
+              },
+              {
+                "id": 1,
+                "text_preview": "Demonstrated Virtual Human to 12 Fontys colleagues in R10 at...",
+                "days_ago": 1,
+                "similarity": 0.5233,
+                "salience": 1.5,
+                "decay": 0.999,
+                "activation": 0.7841,
+                "category": "recent_high_salience"
+              },
+              {
+                "id": 7,
+                "text_preview": "Brainstorming session for new features including multi-agent...",
+                "days_ago": 14,
+                "similarity": 0.5286,
+                "salience": 1.3,
+                "decay": 0.9861,
+                "activation": 0.6776,
+                "category": "recent_creative"
+              },
+              {
+                "id": 2,
+                "text_preview": "Coffee meeting with project sponsor to discuss budget alloca...",
+                "days_ago": 30,
+                "similarity": 0.6045,
+                "salience": 1.0,
+                "decay": 0.9704,
+                "activation": 0.5867,
+                "category": "medium_normal_salience"
+              },
+              {
+                "id": 3,
+                "text_preview": "Initial project kickoff meeting where we defined the scope o...",
+                "days_ago": 270,
+                "similarity": 0.5643,
+                "salience": 1.2,
+                "decay": 0.7634,
+                "activation": 0.5169,
+                "category": "old_high_salience"
+              },
+              {
+                "id": 8,
+                "text_preview": "Attended conference talk about vector databases and semantic...",
+                "days_ago": 120,
+                "similarity": 0.5074,
+                "salience": 1.1,
+                "decay": 0.8869,
+                "activation": 0.495,
+                "category": "old_educational"
+              },
+              {
+                "id": 6,
+                "text_preview": "Weekly standup meeting covering sprint progress and blockers...",
+                "days_ago": 7,
+                "similarity": 0.5949,
+                "salience": 0.8,
+                "decay": 0.993,
+                "activation": 0.4726,
+                "category": "recent_routine"
+              },
+              {
+                "id": 4,
+                "text_preview": "Casual hallway conversation about the weather and weekend pl...",
+                "days_ago": 2,
+                "similarity": 0.5787,
+                "salience": 0.3,
+                "decay": 0.998,
+                "activation": 0.1733,
+                "category": "recent_low_salience"
+              }
+            ]
+          },
+          {
+            "lambda": 0.002,
+            "top_3_memories": [
+              {
+                "id": 1,
+                "text_preview": "Demonstrated Virtual Human to 12 Fontys colleagues in R10 at...",
+                "days_ago": 1,
+                "similarity": 0.5233,
+                "salience": 1.5,
+                "decay": 0.998,
+                "activation": 0.7834,
+                "category": "recent_high_salience"
+              },
+              {
+                "id": 5,
+                "text_preview": "Critical system outage affecting 50+ users, required emergen...",
+                "days_ago": 180,
+                "similarity": 0.4295,
+                "salience": 2.5,
+                "decay": 0.6977,
+                "activation": 0.749,
+                "category": "old_critical_salience"
+              },
+              {
+                "id": 7,
+                "text_preview": "Brainstorming session for new features including multi-agent...",
+                "days_ago": 14,
+                "similarity": 0.5286,
+                "salience": 1.3,
+                "decay": 0.9724,
+                "activation": 0.6681,
+                "category": "recent_creative"
+              }
+            ],
+            "all_activations": [
+              {
+                "id": 1,
+                "text_preview": "Demonstrated Virtual Human to 12 Fontys colleagues in R10 at...",
+                "days_ago": 1,
+                "similarity": 0.5233,
+                "salience": 1.5,
+                "decay": 0.998,
+                "activation": 0.7834,
+                "category": "recent_high_salience"
+              },
+              {
+                "id": 5,
+                "text_preview": "Critical system outage affecting 50+ users, required emergen...",
+                "days_ago": 180,
+                "similarity": 0.4295,
+                "salience": 2.5,
+                "decay": 0.6977,
+                "activation": 0.749,
+                "category": "old_critical_salience"
+              },
+              {
+                "id": 7,
+                "text_preview": "Brainstorming session for new features including multi-agent...",
+                "days_ago": 14,
+                "similarity": 0.5286,
+                "salience": 1.3,
+                "decay": 0.9724,
+                "activation": 0.6681,
+                "category": "recent_creative"
+              },
+              {
+                "id": 2,
+                "text_preview": "Coffee meeting with project sponsor to discuss budget alloca...",
+                "days_ago": 30,
+                "similarity": 0.6045,
+                "salience": 1.0,
+                "decay": 0.9418,
+                "activation": 0.5693,
+                "category": "medium_normal_salience"
+              },
+              {
+                "id": 6,
+                "text_preview": "Weekly standup meeting covering sprint progress and blockers...",
+                "days_ago": 7,
+                "similarity": 0.5949,
+                "salience": 0.8,
+                "decay": 0.9861,
+                "activation": 0.4693,
+                "category": "recent_routine"
+              },
+              {
+                "id": 8,
+                "text_preview": "Attended conference talk about vector databases and semantic...",
+                "days_ago": 120,
+                "similarity": 0.5074,
+                "salience": 1.1,
+                "decay": 0.7866,
+                "activation": 0.439,
+                "category": "old_educational"
+              },
+              {
+                "id": 3,
+                "text_preview": "Initial project kickoff meeting where we defined the scope o...",
+                "days_ago": 270,
+                "similarity": 0.5643,
+                "salience": 1.2,
+                "decay": 0.5827,
+                "activation": 0.3946,
+                "category": "old_high_salience"
+              },
+              {
+                "id": 4,
+                "text_preview": "Casual hallway conversation about the weather and weekend pl...",
+                "days_ago": 2,
+                "similarity": 0.5787,
+                "salience": 0.3,
+                "decay": 0.996,
+                "activation": 0.1729,
+                "category": "recent_low_salience"
+              }
+            ]
+          },
+          {
+            "lambda": 0.005,
+            "top_3_memories": [
+              {
+                "id": 1,
+                "text_preview": "Demonstrated Virtual Human to 12 Fontys colleagues in R10 at...",
+                "days_ago": 1,
+                "similarity": 0.5233,
+                "salience": 1.5,
+                "decay": 0.995,
+                "activation": 0.781,
+                "category": "recent_high_salience"
+              },
+              {
+                "id": 7,
+                "text_preview": "Brainstorming session for new features including multi-agent...",
+                "days_ago": 14,
+                "similarity": 0.5286,
+                "salience": 1.3,
+                "decay": 0.9324,
+                "activation": 0.6407,
+                "category": "recent_creative"
+              },
+              {
+                "id": 2,
+                "text_preview": "Coffee meeting with project sponsor to discuss budget alloca...",
+                "days_ago": 30,
+                "similarity": 0.6045,
+                "salience": 1.0,
+                "decay": 0.8607,
+                "activation": 0.5203,
+                "category": "medium_normal_salience"
+              }
+            ],
+            "all_activations": [
+              {
+                "id": 1,
+                "text_preview": "Demonstrated Virtual Human to 12 Fontys colleagues in R10 at...",
+                "days_ago": 1,
+                "similarity": 0.5233,
+                "salience": 1.5,
+                "decay": 0.995,
+                "activation": 0.781,
+                "category": "recent_high_salience"
+              },
+              {
+                "id": 7,
+                "text_preview": "Brainstorming session for new features including multi-agent...",
+                "days_ago": 14,
+                "similarity": 0.5286,
+                "salience": 1.3,
+                "decay": 0.9324,
+                "activation": 0.6407,
+                "category": "recent_creative"
+              },
+              {
+                "id": 2,
+                "text_preview": "Coffee meeting with project sponsor to discuss budget alloca...",
+                "days_ago": 30,
+                "similarity": 0.6045,
+                "salience": 1.0,
+                "decay": 0.8607,
+                "activation": 0.5203,
+                "category": "medium_normal_salience"
+              },
+              {
+                "id": 6,
+                "text_preview": "Weekly standup meeting covering sprint progress and blockers...",
+                "days_ago": 7,
+                "similarity": 0.5949,
+                "salience": 0.8,
+                "decay": 0.9656,
+                "activation": 0.4596,
+                "category": "recent_routine"
+              },
+              {
+                "id": 5,
+                "text_preview": "Critical system outage affecting 50+ users, required emergen...",
+                "days_ago": 180,
+                "similarity": 0.4295,
+                "salience": 2.5,
+                "decay": 0.4066,
+                "activation": 0.4365,
+                "category": "old_critical_salience"
+              },
+              {
+                "id": 8,
+                "text_preview": "Attended conference talk about vector databases and semantic...",
+                "days_ago": 120,
+                "similarity": 0.5074,
+                "salience": 1.1,
+                "decay": 0.5488,
+                "activation": 0.3063,
+                "category": "old_educational"
+              },
+              {
+                "id": 3,
+                "text_preview": "Initial project kickoff meeting where we defined the scope o...",
+                "days_ago": 270,
+                "similarity": 0.5643,
+                "salience": 1.2,
+                "decay": 0.2592,
+                "activation": 0.1756,
+                "category": "old_high_salience"
+              },
+              {
+                "id": 4,
+                "text_preview": "Casual hallway conversation about the weather and weekend pl...",
+                "days_ago": 2,
+                "similarity": 0.5787,
+                "salience": 0.3,
+                "decay": 0.99,
+                "activation": 0.1719,
+                "category": "recent_low_salience"
+              }
+            ]
+          },
+          {
+            "lambda": 0.01,
+            "top_3_memories": [
+              {
+                "id": 1,
+                "text_preview": "Demonstrated Virtual Human to 12 Fontys colleagues in R10 at...",
+                "days_ago": 1,
+                "similarity": 0.5233,
+                "salience": 1.5,
+                "decay": 0.99,
+                "activation": 0.7771,
+                "category": "recent_high_salience"
+              },
+              {
+                "id": 7,
+                "text_preview": "Brainstorming session for new features including multi-agent...",
+                "days_ago": 14,
+                "similarity": 0.5286,
+                "salience": 1.3,
+                "decay": 0.8694,
+                "activation": 0.5974,
+                "category": "recent_creative"
+              },
+              {
+                "id": 2,
+                "text_preview": "Coffee meeting with project sponsor to discuss budget alloca...",
+                "days_ago": 30,
+                "similarity": 0.6045,
+                "salience": 1.0,
+                "decay": 0.7408,
+                "activation": 0.4479,
+                "category": "medium_normal_salience"
+              }
+            ],
+            "all_activations": [
+              {
+                "id": 1,
+                "text_preview": "Demonstrated Virtual Human to 12 Fontys colleagues in R10 at...",
+                "days_ago": 1,
+                "similarity": 0.5233,
+                "salience": 1.5,
+                "decay": 0.99,
+                "activation": 0.7771,
+                "category": "recent_high_salience"
+              },
+              {
+                "id": 7,
+                "text_preview": "Brainstorming session for new features including multi-agent...",
+                "days_ago": 14,
+                "similarity": 0.5286,
+                "salience": 1.3,
+                "decay": 0.8694,
+                "activation": 0.5974,
+                "category": "recent_creative"
+              },
+              {
+                "id": 2,
+                "text_preview": "Coffee meeting with project sponsor to discuss budget alloca...",
+                "days_ago": 30,
+                "similarity": 0.6045,
+                "salience": 1.0,
+                "decay": 0.7408,
+                "activation": 0.4479,
+                "category": "medium_normal_salience"
+              },
+              {
+                "id": 6,
+                "text_preview": "Weekly standup meeting covering sprint progress and blockers...",
+                "days_ago": 7,
+                "similarity": 0.5949,
+                "salience": 0.8,
+                "decay": 0.9324,
+                "activation": 0.4438,
+                "category": "recent_routine"
+              },
+              {
+                "id": 5,
+                "text_preview": "Critical system outage affecting 50+ users, required emergen...",
+                "days_ago": 180,
+                "similarity": 0.4295,
+                "salience": 2.5,
+                "decay": 0.1653,
+                "activation": 0.1775,
+                "category": "old_critical_salience"
+              },
+              {
+                "id": 4,
+                "text_preview": "Casual hallway conversation about the weather and weekend pl...",
+                "days_ago": 2,
+                "similarity": 0.5787,
+                "salience": 0.3,
+                "decay": 0.9802,
+                "activation": 0.1702,
+                "category": "recent_low_salience"
+              },
+              {
+                "id": 8,
+                "text_preview": "Attended conference talk about vector databases and semantic...",
+                "days_ago": 120,
+                "similarity": 0.5074,
+                "salience": 1.1,
+                "decay": 0.3012,
+                "activation": 0.1681,
+                "category": "old_educational"
+              },
+              {
+                "id": 3,
+                "text_preview": "Initial project kickoff meeting where we defined the scope o...",
+                "days_ago": 270,
+                "similarity": 0.5643,
+                "salience": 1.2,
+                "decay": 0.0672,
+                "activation": 0.0455,
+                "category": "old_high_salience"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "salience_decay_interaction",
+      "data": {
+        "query": "system problems and emergencies",
+        "lambda": 0.002,
+        "memories": [
+          {
+            "text": "Critical system outage affecting 50+ users, required emergency fix and stakeholder communication.",
+            "days_ago": 180,
+            "category": "old_critical_salience",
+            "similarity": 0.6773,
+            "salience": 2.5,
+            "decay": 0.6977,
+            "activation": 1.1814
+          },
+          {
+            "text": "Demonstrated Virtual Human to 12 Fontys colleagues in R10 at 14:30. Engaging Q&A about ethics and data retention.",
+            "days_ago": 1,
+            "category": "recent_high_salience",
+            "similarity": 0.3931,
+            "salience": 1.5,
+            "decay": 0.998,
+            "activation": 0.5885
+          },
+          {
+            "text": "Brainstorming session for new features including multi-agent interactions and character-driven memory.",
+            "days_ago": 14,
+            "category": "recent_creative",
+            "similarity": 0.4598,
+            "salience": 1.3,
+            "decay": 0.9724,
+            "activation": 0.5812
+          },
+          {
+            "text": "Coffee meeting with project sponsor to discuss budget allocation for Q2.",
+            "days_ago": 30,
+            "category": "medium_normal_salience",
+            "similarity": 0.4174,
+            "salience": 1.0,
+            "decay": 0.9418,
+            "activation": 0.3931
+          },
+          {
+            "text": "Attended conference talk about vector databases and semantic search in AI systems.",
+            "days_ago": 120,
+            "category": "old_educational",
+            "similarity": 0.4536,
+            "salience": 1.1,
+            "decay": 0.7866,
+            "activation": 0.3925
+          },
+          {
+            "text": "Weekly standup meeting covering sprint progress and blockers.",
+            "days_ago": 7,
+            "category": "recent_routine",
+            "similarity": 0.4093,
+            "salience": 0.8,
+            "decay": 0.9861,
+            "activation": 0.3229
+          },
+          {
+            "text": "Initial project kickoff meeting where we defined the scope of the narrative memory system.",
+            "days_ago": 270,
+            "category": "old_high_salience",
+            "similarity": 0.4428,
+            "salience": 1.2,
+            "decay": 0.5827,
+            "activation": 0.3096
+          },
+          {
+            "text": "Casual hallway conversation about the weather and weekend plans.",
+            "days_ago": 2,
+            "category": "recent_low_salience",
+            "similarity": 0.4377,
+            "salience": 0.3,
+            "decay": 0.996,
+            "activation": 0.1308
+          }
+        ]
+      }
+    },
+    {
+      "name": "temporal_progression",
+      "data": {
+        "query": "demonstration to colleagues",
+        "lambda": 0.002,
+        "base_salience": 1.5,
+        "time_progression": [
+          {
+            "days_ago": 0,
+            "similarity": 0.5655,
+            "decay": 1.0,
+            "activation": 0.8483,
+            "retention_percent": 100.0
+          },
+          {
+            "days_ago": 1,
+            "similarity": 0.5655,
+            "decay": 0.998,
+            "activation": 0.8466,
+            "retention_percent": 99.8
+          },
+          {
+            "days_ago": 7,
+            "similarity": 0.5655,
+            "decay": 0.9861,
+            "activation": 0.8365,
+            "retention_percent": 98.61
+          },
+          {
+            "days_ago": 30,
+            "similarity": 0.5655,
+            "decay": 0.9418,
+            "activation": 0.7989,
+            "retention_percent": 94.18
+          },
+          {
+            "days_ago": 90,
+            "similarity": 0.5655,
+            "decay": 0.8353,
+            "activation": 0.7085,
+            "retention_percent": 83.53
+          },
+          {
+            "days_ago": 180,
+            "similarity": 0.5655,
+            "decay": 0.6977,
+            "activation": 0.5918,
+            "retention_percent": 69.77
+          },
+          {
+            "days_ago": 365,
+            "similarity": 0.5655,
+            "decay": 0.4819,
+            "activation": 0.4088,
+            "retention_percent": 48.19
+          },
+          {
+            "days_ago": 730,
+            "similarity": 0.5655,
+            "decay": 0.2322,
+            "activation": 0.197,
+            "retention_percent": 23.22
+          }
+        ]
+      }
+    }
+  ]
+}
+
+
+
+=== SUMMARY ===
+Total experiments run: 3
+Timestamp: 2025-10-02T11:27:17.459481+00:00
+
+Key Findings:
+1. Decay rate λ=0.002 provides balanced retention
+2. Salience can counteract temporal decay for important events
+3. Exponential decay follows expected Ebbinghaus curve
+
+Results ready for research proposal! 🎓
