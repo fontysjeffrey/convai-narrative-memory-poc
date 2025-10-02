@@ -13,7 +13,7 @@ WORKDIR /app
 
 # Copy dependency files and install
 COPY pyproject.toml uv.lock ./
-RUN uv pip sync --no-cache pyproject.toml
+RUN uv export --no-hashes --no-dev --no-emit-project > requirements.txt && uv pip install --no-cache -r requirements.txt
 
 # Copy the application code
 COPY ./convai_narrative_memory_poc ./convai_narrative_memory_poc

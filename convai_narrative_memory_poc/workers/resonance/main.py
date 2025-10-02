@@ -2,7 +2,7 @@ import os, json, sys, math, datetime as dt
 from confluent_kafka import Consumer, Producer
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
-from workers.common.utils import (
+from convai_narrative_memory_poc.workers.common.utils import (
     QDRANT_URL,
     QDRANT_COLLECTION,
     KAFKA_BOOTSTRAP,
@@ -24,9 +24,9 @@ def search_anchors(client, query_vec, top_k=5):
 
 
 def deterministic_query_vec(text: str):
-    from workers.common.utils import deterministic_embed
+    from convai_narrative_memory_poc.workers.common.utils import get_embedding
 
-    return deterministic_embed(text)
+    return get_embedding(text)
 
 
 def decay_weight(stored_at_iso: str, now: dt.datetime) -> float:

@@ -24,9 +24,12 @@ services:
       context: ../
       dockerfile: ./convai_narrative_memory_poc/workers/indexer/Dockerfile
     environment:
+      - PYTHONUNBUFFERED=1
       - KAFKA_BOOTSTRAP=kafka:9092
       - QDRANT_URL=http://qdrant:6333
       - QDRANT_COLLECTION=anchors
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-deterministic}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
     depends_on: [kafka, qdrant]
 
   resonance:
@@ -34,9 +37,12 @@ services:
       context: ../
       dockerfile: ./convai_narrative_memory_poc/workers/resonance/Dockerfile
     environment:
+      - PYTHONUNBUFFERED=1
       - KAFKA_BOOTSTRAP=kafka:9092
       - QDRANT_URL=http://qdrant:6333
       - QDRANT_COLLECTION=anchors
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-deterministic}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
     depends_on: [kafka, qdrant]
 
   reteller:
@@ -44,9 +50,12 @@ services:
       context: ../
       dockerfile: ./convai_narrative_memory_poc/workers/reteller/Dockerfile
     environment:
+      - PYTHONUNBUFFERED=1
       - KAFKA_BOOTSTRAP=kafka:9092
       - OPENAI_API_KEY
-      - OLLAMA_BASE_URL
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3}
     depends_on: [kafka]
 
   tools:
@@ -57,6 +66,8 @@ services:
       - KAFKA_BOOTSTRAP=kafka:9092
       - QDRANT_URL=http://qdrant:6333
       - QDRANT_COLLECTION=anchors
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-deterministic}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
     depends_on: [kafka, qdrant]
 
 volumes:
