@@ -744,15 +744,3 @@
   ]
 }
 
-
-
-=== SUMMARY ===
-Total experiments run: 3
-Timestamp: 2025-10-02T11:27:17.459481+00:00
-
-Key Findings:
-1. Decay rate λ=0.002 provides balanced retention
-2. Salience can counteract temporal decay for important events
-3. Exponential decay follows expected Ebbinghaus curve
-
-Results ready for research proposal! 🎓
