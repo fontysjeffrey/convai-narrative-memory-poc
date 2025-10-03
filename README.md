@@ -26,13 +26,41 @@ This uses an in‑process memory store and a built-in LLM stub (or OpenAI if `OP
 
 Requires Docker. This runs Kafka + Qdrant; workers connect via env vars.
 
+Launch the full stack (builds images on first run and executes the seed-and-recall demo once via the `tools` service):
+
+```bash
+docker compose -f convai_narrative_memory_poc/docker-compose.yml up --build kafka qdrant indexer resonance reteller tools
+```
+
+When the stack is running, tail the reteller to hear the narrated memory:
+
+```bash
+docker compose -f convai_narrative_memory_poc/docker-compose.yml logs -f reteller
+```
+
+To re-run the demo seeding at any time, invoke the tools container again:
+
+```bash
+docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm tools python convai_narrative_memory_poc/tools/seed_and_query.py
+```
+
+### Guided demo: three retells with explicit anchors
+
+To see the stored anchors (recent, weeks-old, months-old) and the resulting narration in one go:
+
+```bash
+docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm tools python convai_narrative_memory_poc/tools/demo_three_retells.py
+```
+
+The script prints the freshly seeded anchors (with perceived ages and salience), waits for resonance beats, and then prints the reteller's story. It also writes a JSON transcript under `results/`, so you can inspect every anchor/beat/retelling later. Tail the reteller logs in parallel if you want to watch the worker stream live.
+
 ```bash
 docker compose up -d
 # in another shell: build workers
 docker compose build
 docker compose up -d indexer resonance reteller
 # inject anchors and ask recall
-docker compose run --rm tools python tools/seed_and_query.py
+docker compose run --rm tools python convai_narrative_memory_poc/tools/seed_and_query.py
 # read responses
 docker compose logs -f reteller
 ```

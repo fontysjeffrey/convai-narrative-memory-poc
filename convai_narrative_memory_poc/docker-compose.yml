@@ -69,6 +69,8 @@ services:
       - EMBEDDING_MODEL=${EMBEDDING_MODEL:-deterministic}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
     depends_on: [kafka, qdrant]
+    volumes:
+      - ../results:/app/results
 
 volumes:
   qdrant_storage:
