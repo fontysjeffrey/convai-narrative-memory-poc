@@ -54,6 +54,19 @@ docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm tools 
 
 The script prints the freshly seeded anchors (with perceived ages and salience), waits for resonance beats, and then prints the reteller's story. It also writes a JSON transcript under `results/`, so you can inspect every anchor/beat/retelling later. Tail the reteller logs in parallel if you want to watch the worker stream live.
 
+Need to clean or inspect Qdrant?
+
+```bash
+docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm tools python convai_narrative_memory_poc/tools/inspect_qdrant.py --limit 20
+
+docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm tools python - <<'PY'
+from qdrant_client import QdrantClient
+client = QdrantClient(url="http://qdrant:6333")
+client.delete_collection("anchors")
+print("Deleted anchors collection.")
+PY
+```
+
 ```bash
 docker compose up -d
 # in another shell: build workers
