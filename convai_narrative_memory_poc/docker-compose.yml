@@ -72,5 +72,17 @@ services:
     volumes:
       - ../results:/app/results
 
+  chatbot:
+    build:
+      context: ../
+      dockerfile: ./convai_narrative_memory_poc/tools/Dockerfile
+    environment:
+      - KAFKA_BOOTSTRAP=kafka:9092
+      - PYTHONUNBUFFERED=1
+    depends_on: [kafka, qdrant, indexer, resonance, reteller]
+    stdin_open: true
+    tty: true
+    command: python convai_narrative_memory_poc/tools/chatbot.py
+
 volumes:
   qdrant_storage:

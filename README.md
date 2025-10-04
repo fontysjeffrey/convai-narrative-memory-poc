@@ -44,6 +44,23 @@ To re-run the demo seeding at any time, invoke the tools container again:
 docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm tools python convai_narrative_memory_poc/tools/seed_and_query.py
 ```
 
+### Interactive chatbot demo (Recommended for Presentations!)
+
+Experience the memory system in action with an interactive chatbot that demonstrates real-time memory formation, retrieval, and time-based decay:
+
+```bash
+docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm chatbot
+```
+
+This launches an interactive CLI where you can:
+
+- Chat naturally and watch memories being stored as anchors
+- See memory retrieval with activation scores and decay
+- **Advance time artificially** to demonstrate forgetting curves (`/advance_time 90d`)
+- View transparent Kafka operations and memory beats
+
+See [tools/CHATBOT_DEMO.md](convai_narrative_memory_poc/tools/CHATBOT_DEMO.md) for full details and example sessions.
+
 ### Guided demo: three retells with explicit anchors
 
 To see the stored anchors (recent, weeks-old, months-old) and the resulting narration in one go:
