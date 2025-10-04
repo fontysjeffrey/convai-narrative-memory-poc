@@ -41,6 +41,25 @@ def ensure_collection(client: QdrantClient):
         )
 
 
+def anchor_exists(client: QdrantClient, anchor_id: str) -> bool:
+    if not anchor_id:
+        return False
+    try:
+        existing = client.retrieve(
+            collection_name=QDRANT_COLLECTION,
+            ids=[anchor_id],
+            with_payload=False,
+            with_vectors=False,
+        )
+        return bool(existing)
+    except Exception as e:
+        print(
+            f"[indexer] failed to check existing anchor {anchor_id}: {e}",
+            file=sys.stderr,
+        )
+        return False
+
+
 def main():
     client = QdrantClient(url=QDRANT_URL)
     ensure_collection(client)
@@ -68,6 +87,20 @@ def main():
             stored_at = payload["stored_at"]
             meta = payload.get("meta", {})
             salience = float(payload.get("salience", 1.0))
+            if anchor_exists(client, anchor_id):
+                warn_msg = {
+                    "anchor_id": anchor_id,
+                    "ok": False,
+                    "reason": "anchor_immutable_violation",
+                    "detail": "Anchor already exists; skipping write",
+                }
+                producer.produce(TOP_OUT, json.dumps(warn_msg).encode("utf-8"))
+                producer.flush()
+                print(
+                    f"[indexer] WARNING: anchor {anchor_id} already exists, skipping",
+                    file=sys.stderr,
+                )
+                continue
             embedding = get_embedding(text)
             client.upsert(
                 collection_name=QDRANT_COLLECTION,
