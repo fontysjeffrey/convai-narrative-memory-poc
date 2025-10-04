@@ -147,6 +147,15 @@ These stories:
 - Drift into fantasy ("I once saved the world from aliens")
 - Loss of continuity ("Who am I again?")
 
+**Critical architectural principle:** Retellings (flux) must never be stored back as anchors.
+
+- ❌ Don't: Persist reteller output as new anchors or overwrite originals
+- ❌ Don't: Treat summarized or refined retellings as upgraded anchor facts
+- ✅ Do: Keep flux strictly transient—generate it only when responding
+- ✅ Do: Regenerate every retelling directly from the immutable anchor set
+
+Violating this pollutes the anchor pool with derived content, causes "telephone game" drift, and erodes the factual ground truth that stabilizes identity.
+
 ### 3.4 Anchor Examples
 
 | Type            | Example                             | Salience | Why Stored                     |
@@ -170,6 +179,7 @@ These stories:
 - ✅ **Grounded**: Always rooted in anchor facts (no hallucinations)
 - ✅ **Natural**: Mimics how humans retell stories differently each time
 - ✅ **Fuzzy with age**: Recent = detailed, old = vague
+- ✅ **Transient**: Output-only narratives that are never persisted as anchors
 
 ### 4.2 Flux Mechanics
 
