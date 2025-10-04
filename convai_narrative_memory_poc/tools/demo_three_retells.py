@@ -6,8 +6,15 @@ import datetime as dt
 from pathlib import Path
 
 from confluent_kafka import Producer, Consumer
+from qdrant_client import QdrantClient
+from qdrant_client.http import models
 
-from convai_narrative_memory_poc.workers.common.utils import human_age
+from convai_narrative_memory_poc.workers.common.utils import (
+    human_age,
+    QDRANT_URL,
+    QDRANT_COLLECTION,
+    get_embedding_dim,
+)
 
 
 BOOT = os.getenv("KAFKA_BOOTSTRAP", "localhost:9092")
@@ -16,6 +23,11 @@ TOP_RECALL_IN = "recall.request"
 TOP_RECALL_OUT = "recall.response"
 TOP_RETELL_OUT = "retell.response"
 LOG_DIR = Path(os.getenv("DEMO_LOG_DIR", "/app/results"))
+RESET_COLLECTION_FLAG = os.getenv("DEMO_RESET_COLLECTION", "true").lower() in (
+    "1",
+    "true",
+    "yes",
+)
 
 
 def produce_anchor(
@@ -93,10 +105,34 @@ def persist_log(entries: dict) -> Path:
     return path
 
 
+def reset_collection_if_requested():
+    if not RESET_COLLECTION_FLAG:
+        return
+    try:
+        client = QdrantClient(url=QDRANT_URL)
+        dim = get_embedding_dim()
+        print(
+            f"[demo] Resetting Qdrant collection '{QDRANT_COLLECTION}' to {dim} dimensions"
+        )
+        client.recreate_collection(
+            collection_name=QDRANT_COLLECTION,
+            vectors_config=models.VectorParams(
+                size=dim, distance=models.Distance.COSINE
+            ),
+        )
+        # Give Qdrant a moment to finish the recreation before indexer writes
+        time.sleep(0.5)
+    except Exception as exc:
+        print(
+            f"[demo] WARNING: failed to reset collection '{QDRANT_COLLECTION}': {exc}"
+        )
+
+
 def main():
     producer = Producer({"bootstrap.servers": BOOT})
 
     now = dt.datetime.now(dt.timezone.utc)
+    reset_collection_if_requested()
     anchors = [
         (
             "While calibrating the narrative memory today, we watched BB-8 mimic the reteller's cadence.",
