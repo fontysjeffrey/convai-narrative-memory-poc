@@ -106,9 +106,7 @@ class MemoryChatbot:
         self.producer.produce("recall.request", json.dumps(request).encode("utf-8"))
         self.producer.flush()
 
-        self.log_memory_op(
-            "⏳", f"Waiting for recall response (req: {request_id[:8]}...)", Colors.DIM
-        )
+        self.log_memory_op("⏳", f"Querying memory (req: {request_id[:8]})", Colors.DIM)
 
         # Wait for recall.response
         recall_result = self._wait_for_response_with_consumer(
@@ -117,14 +115,14 @@ class MemoryChatbot:
 
         if not recall_result:
             self.log_memory_op(
-                "⚠️", "No recall.response received (timeout)", Colors.WARNING
+                "⚠️", "No response from memory system (timeout)", Colors.WARNING
             )
             recall_consumer.close()
             retell_consumer.close()
             return None
 
         if not recall_result.get("beats"):
-            self.log_memory_op("💭", "Recall returned but no beats found", Colors.DIM)
+            self.log_memory_op("💭", "No relevant memories found", Colors.DIM)
             recall_consumer.close()
             retell_consumer.close()
             return None
@@ -139,7 +137,7 @@ class MemoryChatbot:
 
         if not retell_result:
             self.log_memory_op(
-                "⚠️", "No retell.response received (timeout)", Colors.WARNING
+                "⚠️", "Retelling timed out (using beats only)", Colors.DIM
             )
 
         return {
@@ -187,21 +185,11 @@ class MemoryChatbot:
                 payload = json.loads(msg.value().decode("utf-8"))
                 msg_req_id = payload.get("request_id", "")
 
-                # Debug: show what we're seeing
-                if messages_seen <= 3:  # Only show first few to avoid spam
-                    self.log_memory_op(
-                        "🔎",
-                        f"Message #{messages_seen}: req_id={msg_req_id[:8]}... (want {request_id[:8]}...)",
-                        Colors.DIM,
-                    )
-
                 if msg_req_id == request_id:
-                    self.log_memory_op(
-                        "✅", f"Found matching response!", Colors.OKGREEN
-                    )
+                    self.log_memory_op("✓", "Response received", Colors.OKGREEN)
                     return payload
         except Exception as e:
-            print(f"[chatbot] Exception in wait_for_response: {e}", file=sys.stderr)
+            print(f"[ERROR] Exception in wait_for_response: {e}", file=sys.stderr)
 
         return None
 
@@ -237,15 +225,10 @@ class MemoryChatbot:
         self.store_anchor(f"User said: {user_input}", salience=0.9)
 
         # Try to recall relevant memories (but not the message we just stored)
-        print(f"[DEBUG] About to call request_recall...", file=sys.stderr)
         try:
             recall_data = self.request_recall(user_input, top_k=5)
-            print(
-                f"[DEBUG] request_recall returned: {recall_data is not None}",
-                file=sys.stderr,
-            )
         except Exception as e:
-            print(f"[DEBUG] EXCEPTION in request_recall: {e}", file=sys.stderr)
+            print(f"[ERROR] Exception in request_recall: {e}", file=sys.stderr)
             import traceback
 
             traceback.print_exc()
@@ -269,7 +252,7 @@ class MemoryChatbot:
                 else:
                     response = self._generate_simple_response(user_input)
         else:
-            self.log_memory_op("💭", "No relevant memories recalled yet", Colors.DIM)
+            self.log_memory_op("💭", "No memories recalled", Colors.DIM)
             response = self._generate_simple_response(user_input)
 
         # Store bot's response
