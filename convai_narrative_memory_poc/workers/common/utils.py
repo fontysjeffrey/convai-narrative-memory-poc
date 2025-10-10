@@ -6,10 +6,17 @@ QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "anchors")
 KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "localhost:9092")
 
 # Embedding configuration
-EMBEDDING_MODEL = os.getenv(
-    "EMBEDDING_MODEL", "deterministic"
-)  # Options: deterministic, nomic-embed-text, mxbai-embed-large, bge-m3
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "deterministic")
+# Suggested values:
+#   deterministic                → hash-based offline baseline
+#   portkey:<slug>                → remote via Fontys Portkey gateway (e.g. portkey:cohere-embed-v3)
+#   ollama:<slug>                 → local Ollama embeddings (e.g. ollama:cohere-embed-v3)
+#   nomic-embed-text / mxbai-embed-large / bge-m3 → legacy direct Ollama model names
+
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+PORTKEY_API_KEY = os.getenv("PORTKEY_API_KEY") or os.getenv("PORTKEY")
+PORTKEY_BASE_URL = os.getenv("PORTKEY_BASE_URL", "https://api.portkey.ai/v1")
+PORTKEY_CONFIG_ID = os.getenv("PORTKEY_CONFIG_ID")
 
 # Embedding dimensions by model
 EMBEDDING_DIMS = {
@@ -17,17 +24,23 @@ EMBEDDING_DIMS = {
     "nomic-embed-text": 768,
     "mxbai-embed-large": 1024,
     "bge-m3": 1024,
+    "cohere-embed-v3": 1024,
 }
 
 
 def get_embedding_dim() -> int:
-    """Get the dimension for the current embedding model."""
-    return EMBEDDING_DIMS.get(EMBEDDING_MODEL, 384)
+    """Resolve embedding dimension for the current model (provider agnostic)."""
+    key = EMBEDDING_MODEL
+    if ":" in key:
+        key = key.split(":", 1)[1]
+    return EMBEDDING_DIMS.get(key, 384)
 
 
-def deterministic_embed(text: str, dim: int = 384) -> List[float]:
+def deterministic_embed(text: str, dim: int | None = None) -> List[float]:
     # Fast, deterministic pseudo-embedding based on hashing tokens.
     # Useful for POC/testing without external dependencies
+    if dim is None:
+        dim = get_embedding_dim()
     vec = np.zeros(dim, dtype=np.float32)
     for tok in text.lower().split():
         h = int(hashlib.md5(tok.encode()).hexdigest(), 16)
@@ -38,17 +51,85 @@ def deterministic_embed(text: str, dim: int = 384) -> List[float]:
     return (vec / norm).tolist()
 
 
+def _normalize_model_name(model: str) -> str:
+    return model.split(":", 1)[1] if ":" in model else model
+
+
+def _resolve_embedding_backend(model: str) -> tuple[str, str]:
+    """Return (backend, normalized_model)."""
+    if model.startswith("portkey:"):
+        return ("portkey", _normalize_model_name(model))
+    if model.startswith("ollama:"):
+        return ("ollama", _normalize_model_name(model))
+    if model in {"nomic-embed-text", "mxbai-embed-large", "bge-m3"}:
+        return ("ollama", model)
+    return ("deterministic", model)
+
+
+def portkey_embed(text: str, model: str) -> List[float]:
+    """Generate embeddings using Portkey gateway."""
+    if not PORTKEY_API_KEY:
+        raise RuntimeError("PORTKEY_API_KEY is not configured")
+
+    backend, normalized = _resolve_embedding_backend(model)
+    if backend != "portkey":
+        raise ValueError(f"portkey_embed called for non-Portkey model: {model}")
+
+    try:
+        import requests
+
+        headers = {
+            "content-type": "application/json",
+            "x-portkey-api-key": PORTKEY_API_KEY,
+        }
+        if PORTKEY_CONFIG_ID:
+            headers["x-portkey-config"] = PORTKEY_CONFIG_ID
+
+        response = requests.post(
+            f"{PORTKEY_BASE_URL}/embeddings",
+            headers=headers,
+            json={"model": normalized, "input": [text]},
+            timeout=60,
+        )
+        try:
+            response.raise_for_status()
+        except Exception as exc:
+            print(
+                "[embedding] Portkey embedding response error",
+                {
+                    "status_code": response.status_code,
+                    "text": response.text[:200],
+                    "model": normalized,
+                },
+            )
+            raise
+        data = response.json()
+        embeddings = data.get("data", [])
+        if not embeddings:
+            raise ValueError("Empty embeddings response from Portkey")
+        return embeddings[0].get("embedding", [])
+    except Exception as e:
+        print(
+            f"[embedding] Portkey embedding failed: {e}, falling back to deterministic"
+        )
+        return deterministic_embed(text, dim=get_embedding_dim())
+
+
 def ollama_embed(text: str, model: str = "nomic-embed-text") -> List[float]:
     """
     Generate embeddings using Ollama.
     Supported models: nomic-embed-text, mxbai-embed-large, bge-m3
     """
+    backend, normalized = _resolve_embedding_backend(model)
+    if backend != "ollama":
+        raise ValueError(f"ollama_embed called for non-Ollama model: {model}")
+
     try:
         import requests
 
         response = requests.post(
             f"{OLLAMA_BASE_URL}/api/embeddings",
-            json={"model": model, "prompt": text},
+            json={"model": normalized, "prompt": text},
             timeout=30,  # Larger models like BGE-M3 need more time
         )
         response.raise_for_status()
@@ -57,18 +138,21 @@ def ollama_embed(text: str, model: str = "nomic-embed-text") -> List[float]:
         print(
             f"[embedding] Ollama embedding failed: {e}, falling back to deterministic"
         )
-        return deterministic_embed(text)
+        return deterministic_embed(text, dim=get_embedding_dim())
 
 
 def get_embedding(text: str) -> List[float]:
     """
     Main embedding function that respects EMBEDDING_MODEL env var.
     """
-    if EMBEDDING_MODEL == "deterministic":
-        return deterministic_embed(text)
-    else:
-        # Use Ollama for any other model (nomic-embed-text, mxbai-embed-large, bge-m3)
+    backend, resolved = _resolve_embedding_backend(EMBEDDING_MODEL)
+    if backend == "deterministic":
+        return deterministic_embed(text, dim=get_embedding_dim())
+    if backend == "portkey":
+        return portkey_embed(text, model=EMBEDDING_MODEL)
+    if backend == "ollama":
         return ollama_embed(text, model=EMBEDDING_MODEL)
+    return deterministic_embed(text, dim=get_embedding_dim())
 
 
 def human_age(delta: dt.timedelta) -> str:

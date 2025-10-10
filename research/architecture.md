@@ -22,7 +22,7 @@ The system is built on a **microservices architecture** using **event-driven com
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         Apache Kafka (Message Broker)               │
-│  Topics: anchors.write → anchors.indexed → recall.request →         │
+│  Topics: anchors-write → anchors-indexed → recall-request →         │
 │          recall.response → retell.response                          │
 └─────────────────────────────────────────────────────────────────────┘
                                     ↕
@@ -49,7 +49,7 @@ The system is built on a **microservices architecture** using **event-driven com
 
 **Topics in this system**:
 
-- `anchors.write`: Raw memory experiences waiting to be processed
+- `anchors-write`: Raw memory experiences waiting to be processed
 - `anchors.indexed`: Confirmation that memories have been embedded and stored
 - `recall.request`: Queries asking the system to remember something
 - `recall.response`: Retrieved memory "beats" with activation scores
@@ -57,14 +57,14 @@ The system is built on a **microservices architecture** using **event-driven com
 
 ### 2. Indexer Worker
 
-**Input**: Listens to `anchors.write` topic  
+**Input**: Listens to `anchors-write` topic  
 **Output**: Writes to `anchors.indexed` topic, stores in Qdrant
 
 **What it does**: This component is responsible for transforming raw text memories into searchable vector representations and storing them permanently.
 
 **Process**:
 
-1. Consumes a memory anchor from the `anchors.write` topic
+1. Consumes a memory anchor from the `anchors-write` topic
 2. Generates a semantic embedding (vector representation) of the text using the configured embedding model:
    - **Deterministic** (384-dim): Fast, zero dependencies, good for testing
    - **Nomic-embed-text** (768-dim): Excellent English semantic search, 274 MB
@@ -177,7 +177,7 @@ Let's trace a memory from creation to recall:
      "meta": {"tags": ["demo", "fontys"]}
    }
 
-2. Application → Kafka (anchors.write)
+2. Application → Kafka (anchors-write)
 
 3. Indexer consumes message
    - Generates embedding: [0.23, -0.45, 0.12, ..., 0.67] (768 dimensions)

@@ -134,9 +134,9 @@ This demo is perfect for:
 ### What's Happening Behind the Scenes:
 
 ```
-User Input → [Kafka: anchors.write] → Indexer → Qdrant
+User Input → [Kafka: anchors-write] → Indexer → Qdrant
                                            ↓
-User Query → [Kafka: recall.request] → Resonance → [Kafka: recall.response]
+User Query → [Kafka: recall-request] → Resonance → [Kafka: recall-response]
                                            ↓
                                        Reteller → [Kafka: retell.response]
                                            ↓
@@ -145,7 +145,7 @@ User Query → [Kafka: recall.request] → Resonance → [Kafka: recall.response
 
 ### Key Components Used:
 
-- **Kafka Topics**: `anchors.write`, `recall.request`, `recall.response`, `retell.response`
+- **Kafka Topics**: `anchors-write`, `recall-request`, `recall-response`, `retell-response`
 - **Indexer**: Embeds text and stores in Qdrant
 - **Resonance**: Applies decay formula: `activation = similarity × exp(-λ × age) × salience`
 - **Reteller**: Generates natural language narratives from memory beats

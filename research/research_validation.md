@@ -113,7 +113,7 @@ We support multiple embedding strategies:
 | `anchors.indexed` | Confirmation of successful indexing  |
 | `recall.request`  | Query for memory retrieval           |
 | `recall.response` | Retrieved "beats" (memory fragments) |
-| `retell.response` | LLM-regenerated narrative            |
+| `retell.response` | Final narrative retelling            |
 
 ---
 

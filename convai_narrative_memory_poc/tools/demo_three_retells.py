@@ -18,16 +18,17 @@ from convai_narrative_memory_poc.workers.common.utils import (
 
 
 BOOT = os.getenv("KAFKA_BOOTSTRAP", "localhost:9092")
-TOP_ANCHORS = "anchors.write"
-TOP_RECALL_IN = "recall.request"
-TOP_RECALL_OUT = "recall.response"
-TOP_RETELL_OUT = "retell.response"
+TOP_ANCHORS = "anchors-write"
+TOP_RECALL_REQUEST = "recall-request"
+TOP_RECALL_RESPONSE = "recall-response"
+TOP_RETELL_RESPONSE = "retell-response"
 LOG_DIR = Path(os.getenv("DEMO_LOG_DIR", "/app/results"))
 RESET_COLLECTION_FLAG = os.getenv("DEMO_RESET_COLLECTION", "true").lower() in (
     "1",
     "true",
     "yes",
 )
+# Always reset the collection before demos so we start from a clean slate.
 
 
 def produce_anchor(
@@ -54,7 +55,7 @@ def request_recall(
         "now": now_iso,
         "top_k": top_k,
     }
-    producer.produce(TOP_RECALL_IN, json.dumps(request).encode("utf-8"))
+    producer.produce(TOP_RECALL_REQUEST, json.dumps(request).encode("utf-8"))
     producer.flush()
     return request
 
@@ -167,7 +168,7 @@ def main():
     print(f"\n[demo] Recall request id: {recall['request_id']}")
 
     print("[demo] Waiting for resonance beats...")
-    beats_msg = wait_for_message(TOP_RECALL_OUT, recall["request_id"])
+    beats_msg = wait_for_message(TOP_RECALL_RESPONSE, recall["request_id"])
     beats = beats_msg.get("beats", [])
     if not beats:
         print("[demo] No beats returned—check that indexer and resonance are running.")
@@ -179,7 +180,7 @@ def main():
             )
 
     print("\n[demo] Waiting for retelling...")
-    retell_msg = wait_for_message(TOP_RETELL_OUT, recall["request_id"])
+    retell_msg = wait_for_message(TOP_RETELL_RESPONSE, recall["request_id"])
     retelling = retell_msg.get("retelling", "<no retelling>")
     print("\n[demo] Reteller response:\n")
     print(retelling)

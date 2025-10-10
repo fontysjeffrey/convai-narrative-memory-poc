@@ -10,8 +10,8 @@ from convai_narrative_memory_poc.workers.common.utils import (
     get_embedding,
 )
 
-TOP_IN = "recall.request"
-TOP_OUT = "recall.response"
+TOP_IN = "recall-request"
+TOP_OUT = "recall-response"
 
 LAM = 0.002  # time decay per day
 MU = 0.001  # cross-time damping
@@ -132,6 +132,8 @@ def main():
             request_id = payload["request_id"]
             query = payload["query"]
             top_k = int(payload.get("top_k", 5))
+            session_id = payload.get("session_id")
+            ignore_ids = set(payload.get("ignore_anchor_ids") or [])
             assumed_age = payload.get(
                 "assume_anchor_age"
             )  # optional ISO 8601 duration, not used here
@@ -146,14 +148,39 @@ def main():
 
             qvec = deterministic_query_vec(query)
             hits = search_anchors(client, qvec, top_k=top_k)
+            filtered = []
+            for h in hits:
+                if h.id in ignore_ids:
+                    continue
+                payload_obj = getattr(h, "payload", {}) or {}
+                meta = payload_obj.get("meta", {}) or {}
+                if session_id and meta.get("session") == session_id:
+                    continue
+                stored_iso = payload_obj.get("stored_at")
+                if stored_iso:
+                    stored = dt.datetime.fromisoformat(
+                        stored_iso.replace("Z", "+00:00")
+                    ).replace(tzinfo=None)
+                    if (now - stored).total_seconds() < 5:
+                        continue
+                filtered.append(h)
+            hits = filtered
             hits = dedupe_hits_by_text(hits)
             # Simple activation = similarity * decay * salience
             scored = []
             embedding_cache = {}
             for h in hits:
                 pl = h.payload
+                meta = (pl.get("meta") or {}) if isinstance(pl, dict) else {}
+                if session_id and meta.get("session") == session_id:
+                    continue
                 decay = decay_weight(pl["stored_at"], now)
                 sal = float(pl.get("salience", 1.0))
+                stored = dt.datetime.fromisoformat(
+                    pl["stored_at"].replace("Z", "+00:00")
+                ).replace(tzinfo=None)
+                if (now - stored).total_seconds() < 5:
+                    continue
                 act = float(h.score) * decay * sal
                 scored.append((act, h))
 

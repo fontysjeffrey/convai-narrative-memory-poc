@@ -43,6 +43,15 @@ class MemoryChatbot:
         self.conversation_history = []
         self.session_id = str(uuid.uuid4())[:8]
 
+    def reset_session(self):
+        self.conversation_history.clear()
+        self.session_id = str(uuid.uuid4())[:8]
+        self.log_memory_op(
+            "🔁",
+            "Session reset; new session_id " + self.session_id,
+            Colors.OKBLUE,
+        )
+
     def get_current_time(self) -> dt.datetime:
         """Get current time with any artificial offset applied."""
         return dt.datetime.now(dt.timezone.utc) + self.time_offset
@@ -68,7 +77,7 @@ class MemoryChatbot:
             "salience": salience,
         }
 
-        self.producer.produce("anchors.write", json.dumps(anchor).encode("utf-8"))
+        self.producer.produce("anchors-write", json.dumps(anchor).encode("utf-8"))
         self.producer.flush()
 
         self.log_memory_op(
@@ -92,18 +101,19 @@ class MemoryChatbot:
             "query": query,
             "now": now.isoformat(),
             "top_k": top_k,
+            "session_id": self.session_id,
         }
 
         # Subscribe to response topics BEFORE sending request
-        recall_consumer = self._create_consumer("recall.response")
-        retell_consumer = self._create_consumer("retell.response")
+        recall_consumer = self._create_consumer("recall-response")
+        retell_consumer = self._create_consumer("retell-response")
 
         # Give consumers time to fully subscribe and get partition assignment
         # This is critical - Kafka consumers need time to join the group and get assigned partitions
         time.sleep(1.0)
 
         # Now send the request
-        self.producer.produce("recall.request", json.dumps(request).encode("utf-8"))
+        self.producer.produce("recall-request", json.dumps(request).encode("utf-8"))
         self.producer.flush()
 
         self.log_memory_op("⏳", f"Querying memory (req: {request_id[:8]})", Colors.DIM)
@@ -332,6 +342,7 @@ class MemoryChatbot:
   /advance_time <months>m   - Advance time by months (e.g., /advance_time 6m)
   /advance_time <years>y    - Advance time by years (e.g., /advance_time 1y)
   /reset_time               - Reset time to present
+  /reset_session            - Start a fresh session (ignores current run for recall)
 
 {self.colorize("Utility Commands:", Colors.BOLD)}
   /help                     - Show this help
@@ -419,6 +430,9 @@ def main():
 
                 elif command == "/reset_time":
                     chatbot.reset_time()
+
+                elif command == "/reset_session":
+                    chatbot.reset_session()
 
                 elif command == "/advance_time":
                     if not arg:

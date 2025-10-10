@@ -90,19 +90,19 @@ Bot: About 3 months ago, you were researching narrative memory at Fontys,
 ```
 User Input
     ↓
-Store as anchor → Kafka (anchors.write)
+Store as anchor → Kafka (anchors-write)
     ↓
 Indexer → Qdrant (vector storage)
     ↓
-Query → Kafka (recall.request)
+Query → Kafka (recall-request)
     ↓
 Resonance Worker → Qdrant search + decay calculation
     ↓
-Kafka (recall.response) → Memory beats
+Kafka (recall-response) → Memory beats
     ↓
 Reteller Worker → LLM narrative generation
     ↓
-Kafka (retell.response) → Final response
+Kafka (retell-response) → Final response
     ↓
 Display to user
 ```
