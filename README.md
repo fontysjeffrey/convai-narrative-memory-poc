@@ -1,104 +1,93 @@
-# Semantic Memory PoC (Kafka + Qdrant + Reteller)
+# ConvAI Narrative Memory PoC
 
-Tiny-but-real PoC of a **Kafka-driven semantic memory** for a virtual human.
-Memories are **anchors** stored as semantic seeds (text + embedding + time + salience).
-On recall, we fetch related anchors, let **resonance/decay** shape activation, and ask the LLM to **re-narrate** concisely, with natural fading as time grows.
+Tiny-but-real proof of concept of a Kafka + Qdrant memory loop for a virtual human. We store every utterance as an "anchor", recall the most relevant ones with time decay, and ask an LLM to weave them into a short recap.
 
-## Components
+---
 
-- **Kafka topics**: `anchors.write`, `anchors.indexed`, `recall.request`, `recall.response`.
-- **Indexer**: consumes anchors, embeds, upserts into Qdrant, emits `anchors.indexed`.
-- **Resonance/Recall**: given a cue, pulls nearest anchors, applies time decay + simple spreading activation, returns 2–4 **beats** (anchor text + perceived ages).
-- **Reteller**: calls an LLM (or a built‑in stub) to retell concisely, based only on beats + ages (no hard knobs).
+## Quick Start (Docker)
 
-## Fast start (dev simulation, no Kafka)
+1. **Reset storage & topics** – ensures Qdrant matches the current embedding size and Kafka topics exist.
+   ```bash
+   bash convai_narrative_memory_poc/tools/create_topics.sh
+   ```
+2. **Boot the workers**
+   ```bash
+   docker compose -f convai_narrative_memory_poc/docker-compose.yml up -d \
+     kafka qdrant indexer resonance reteller
+   ```
+3. **Open the interactive chatbot**
+   ```bash
+   docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm chatbot
+   ```
+   - `/reset_session` → start a clean session (current chat is ignored for recall)
+   - `/advance_time 90d` → simulate forgetting curves
+   - `/reset_time` → jump back to present
 
-You can run the end-to-end demo without Docker/Kafka to see the fade effect on one machine:
+The reteller now ignores anchors from the live session and anything younger than ~5 seconds, so the recap only cites prior memories.
+
+When you are done:
+
+```bash
+docker compose -f convai_narrative_memory_poc/docker-compose.yml down
+```
+
+---
+
+## Other Demos
+
+| Demo                | Command                                                                                                      | What it shows                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| Three retells       | `docker compose -f ... run --rm tools python convai_narrative_memory_poc/tools/demo_three_retells.py`        | Seeds three anchors (recent → months) and prints beats + narrated recap |
+| Seed & query script | `docker compose -f ... run --rm tools python convai_narrative_memory_poc/tools/seed_and_query.py`            | Simple end-to-end seed and recall without the chatbot                   |
+| Inspect Qdrant      | `docker compose -f ... run --rm tools python convai_narrative_memory_poc/tools/inspect_qdrant.py --limit 20` | Peek at stored anchors                                                  |
+
+---
+
+## Model Selection Cheatsheet
+
+Set these env vars before starting the stack (Docker Compose already reads them):
+
+| Purpose                   | Env var                   | Example                             | Notes                                                                                                      |
+| ------------------------- | ------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Chat LLM                  | `PORTKEY_MODEL`           | `mistral-large`                     | Routed through Fontys Portkey gateway. Prefix with `portkey:` if you prefer (`portkey:mistral-large`).     |
+| Embeddings                | `EMBEDDING_MODEL`         | `ollama:bge-m3`                     | Prefix `portkey:` for remote models or `ollama:` for local Ollama embeddings. Defaults to `ollama:bge-m3`. |
+| Remote embedding override | `PORTKEY_EMBEDDING_MODEL` | `portkey:cohere-embed-v3`           | Optional; use when Fontys enables the model. Falls back to deterministic vectors if the call fails.        |
+| Local Ollama endpoint     | `OLLAMA_BASE_URL`         | `http://host.docker.internal:11434` | Needed if you keep Ollama outside Docker.                                                                  |
+
+If no remote embedding is available, the system stays on Ollama **bge-m3** and falls back to deterministic hashing for safety.
+
+---
+
+## Local (no Docker)
 
 ```bash
 pip install -r requirements.txt
 python scripts/demo_simulation.py
 ```
 
-This uses an in‑process memory store and a built-in LLM stub (or OpenAI if `OPENAI_API_KEY` is set).
+This uses the same logic with an in-process store; handy for quick visualization without Kafka.
 
-## Full stack (Docker)
+---
 
-Requires Docker. This runs Kafka + Qdrant; workers connect via env vars.
-
-Launch the full stack (builds images on first run and executes the seed-and-recall demo once via the `tools` service):
+## Handy Commands
 
 ```bash
-docker compose -f convai_narrative_memory_poc/docker-compose.yml up --build kafka qdrant indexer resonance reteller tools
+bash convai_narrative_memory_poc/tools/create_topics.sh   # reset Qdrant + create Kafka topics (anchors-write, recall-request, ...)
+
+docker compose -f convai_narrative_memory_poc/docker-compose.yml logs -f reteller   # watch reteller output
+
+docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm tools python convai_narrative_memory_poc/tools/validation_experiments.py
 ```
 
-When the stack is running, tail the reteller to hear the narrated memory:
+---
 
-```bash
-docker compose -f convai_narrative_memory_poc/docker-compose.yml logs -f reteller
-```
+## Docs & Reading
 
-To re-run the demo seeding at any time, invoke the tools container again:
+- `research/anchor_flux_model.md` – conceptual overview (start here)
+- `research/architecture.md` – system diagram and design notes
+- `research/env_config.md` – more detail on model choices and environment variables
+- `convai_narrative_memory_poc/tools/CHATBOT_DEMO.md` – walkthrough of the interactive CLI
 
-```bash
-docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm tools python convai_narrative_memory_poc/tools/seed_and_query.py
-```
+---
 
-### Guided demo: three retells with explicit anchors
-
-To see the stored anchors (recent, weeks-old, months-old) and the resulting narration in one go:
-
-```bash
-docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm tools python convai_narrative_memory_poc/tools/demo_three_retells.py
-```
-
-The script prints the freshly seeded anchors (with perceived ages and salience), waits for resonance beats, and then prints the reteller's story. It also writes a JSON transcript under `results/`, so you can inspect every anchor/beat/retelling later. Tail the reteller logs in parallel if you want to watch the worker stream live.
-
-Need to clean or inspect Qdrant?
-
-```bash
-docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm tools python convai_narrative_memory_poc/tools/inspect_qdrant.py --limit 20
-
-docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm tools python - <<'PY'
-from qdrant_client import QdrantClient
-client = QdrantClient(url="http://qdrant:6333")
-client.delete_collection("anchors")
-print("Deleted anchors collection.")
-PY
-```
-
-```bash
-docker compose up -d
-# in another shell: build workers
-docker compose build
-docker compose up -d indexer resonance reteller
-# inject anchors and ask recall
-docker compose run --rm tools python convai_narrative_memory_poc/tools/seed_and_query.py
-# read responses
-docker compose logs -f reteller
-```
-
-## Env
-
-- `QDRANT_URL` (default `http://qdrant:6333` in docker, `http://localhost:6333` locally)
-- `QDRANT_COLLECTION` (default `anchors`)
-- `KAFKA_BOOTSTRAP` (default `kafka:9092` in docker; `localhost:9092` locally)
-- `OPENAI_API_KEY` (optional for real LLM)
-- `OLLAMA_BASE_URL` (optional, e.g. `http://host.docker.internal:11434`)
-
-## Documentation
-
-- **[ANCHOR_FLUX_MODEL.md](research/anchor_flux_model.md)**: **Start here!** Core conceptual model (anchors + flux = identity)
-- **[ARCHITECTURE.md](research/architecture.md)**: System architecture, components, and design decisions
-- **[RESEARCH_PROPOSAL.md](research/research_proposal.md)**: 12-week research plan with validated PoC results
-- **[EXPERIMENTAL_METHODOLOGY.md](research/experimental_methodology.md)**: Complete experimental setup, procedures, and reproducibility
-- **[FORGETTING_CURVE.md](research/forgetting_curve.md)**: Ebbinghaus forgetting curve theory and implementation
-- **[FEASIBILITY_ANALYSIS.md](research/feasibility_analysis.md)**: 12-week plan feasibility assessment
-- **[ENV_CONFIG.md](research/env_config.md)**: Environment configuration for embedding and LLM models
-
-## Notes
-
-- **Embedding**: Now uses BGE-M3 (1024-dim multilingual) via Ollama; falls back to deterministic hashing if unavailable.
-- **LLM**: Supports Phi4, Qwen3, Llama3 (via Ollama) or GPT-4o-mini (via OpenAI).
-- **Validation**: All experiments are reproducible via `tools/validation_experiments.py` (see EXPERIMENTAL_METHODOLOGY.md).
-- This repo favors _clarity over performance_.
+_This repo favors clarity over raw performance. Pull requests with improved ergonomics are welcome!_

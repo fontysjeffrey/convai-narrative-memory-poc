@@ -9,8 +9,8 @@ from convai_narrative_memory_poc.workers.common.utils import (
 )
 
 KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "localhost:9092")
-TOP_IN = "recall.response"
-TOP_OUT = "retell.response"
+TOP_IN = "recall-response"
+TOP_OUT = "retell-response"
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OLLAMA = os.getenv("OLLAMA_BASE_URL")
@@ -18,6 +18,11 @@ OLLAMA_MODEL = os.getenv(
     "OLLAMA_MODEL", "llama3"
 )  # Default to llama3, but configurable
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+PORTKEY_API_KEY = os.getenv("PORTKEY_API_KEY") or os.getenv("PORTKEY")
+PORTKEY_BASE_URL = os.getenv("PORTKEY_BASE_URL", "https://api.portkey.ai/v1")
+PORTKEY_CONFIG_ID = os.getenv("PORTKEY_CONFIG_ID")
+PORTKEY_MODEL = os.getenv("PORTKEY_MODEL", "mistral-large")
 
 
 STOPWORDS = set(
@@ -206,6 +211,44 @@ def call_openai(messages):
         return None
 
 
+def call_portkey(messages):
+    if not PORTKEY_API_KEY:
+        return None
+
+    try:
+        payload = {
+            "model": PORTKEY_MODEL,
+            "messages": messages,
+            "max_tokens": 200,
+            "temperature": 0.35,
+        }
+
+        headers = {
+            "content-type": "application/json",
+            "x-portkey-api-key": PORTKEY_API_KEY,
+        }
+        if PORTKEY_CONFIG_ID:
+            headers["x-portkey-config"] = PORTKEY_CONFIG_ID
+
+        r = requests.post(
+            f"{PORTKEY_BASE_URL}/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=30,
+        )
+        r.raise_for_status()
+        data = r.json()
+        choices = data.get("choices") or []
+        if not choices:
+            return None
+        message = choices[0].get("message", {})
+        content = message.get("content")
+        return content
+    except Exception as e:
+        print(f"[reteller] Portkey error: {e}", file=sys.stderr)
+        return None
+
+
 def build_narrative_guidance(beats: List[Dict[str, Any]]) -> Dict[str, Any]:
     ordered = order_beats_temporally(beats)
     motifs = extract_motifs(ordered)
@@ -270,12 +313,14 @@ def main():
             beats = payload["beats"]
             guidance = build_narrative_guidance(beats)
             text = None
+            messages = [
+                {"role": "system", "content": guidance["system"]},
+                {"role": "user", "content": guidance["user"]},
+            ]
             if OPENAI_API_KEY:
-                messages = [
-                    {"role": "system", "content": guidance["system"]},
-                    {"role": "user", "content": guidance["user"]},
-                ]
                 text = call_openai(messages)
+            if text is None:
+                text = call_portkey(messages)
             if text is None and OLLAMA:
                 prompt = "\n\n".join([guidance["system"], guidance["user"]])
                 text = call_ollama(prompt)

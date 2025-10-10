@@ -28,7 +28,7 @@ services:
       - KAFKA_BOOTSTRAP=kafka:9092
       - QDRANT_URL=http://qdrant:6333
       - QDRANT_COLLECTION=anchors
-      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-deterministic}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-ollama:bge-m3}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
     depends_on: [kafka, qdrant]
 
@@ -41,7 +41,7 @@ services:
       - KAFKA_BOOTSTRAP=kafka:9092
       - QDRANT_URL=http://qdrant:6333
       - QDRANT_COLLECTION=anchors
-      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-deterministic}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-ollama:bge-m3}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
     depends_on: [kafka, qdrant]
 
@@ -54,6 +54,10 @@ services:
       - KAFKA_BOOTSTRAP=kafka:9092
       - OPENAI_API_KEY
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+      - PORTKEY_API_KEY=${PORTKEY_API_KEY}
+      - PORTKEY_BASE_URL=${PORTKEY_BASE_URL:-https://api.portkey.ai/v1}
+      - PORTKEY_CONFIG_ID=${PORTKEY_CONFIG_ID}
+      - PORTKEY_MODEL=${PORTKEY_MODEL:-mistral-large}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3}
     depends_on: [kafka]
@@ -66,11 +70,27 @@ services:
       - KAFKA_BOOTSTRAP=kafka:9092
       - QDRANT_URL=http://qdrant:6333
       - QDRANT_COLLECTION=anchors
-      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-deterministic}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-ollama:bge-m3}
+      - PORTKEY_API_KEY=${PORTKEY_API_KEY}
+      - PORTKEY_BASE_URL=${PORTKEY_BASE_URL:-https://api.portkey.ai/v1}
+      - PORTKEY_CONFIG_ID=${PORTKEY_CONFIG_ID}
+      - PORTKEY_EMBEDDING_MODEL=${PORTKEY_EMBEDDING_MODEL:-cohere-embed-v3}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
     depends_on: [kafka, qdrant]
     volumes:
       - ../results:/app/results
+
+  chatbot:
+    build:
+      context: ../
+      dockerfile: ./convai_narrative_memory_poc/tools/Dockerfile
+    environment:
+      - KAFKA_BOOTSTRAP=kafka:9092
+      - PYTHONUNBUFFERED=1
+    depends_on: [kafka, qdrant, indexer, resonance, reteller]
+    stdin_open: true
+    tty: true
+    command: python convai_narrative_memory_poc/tools/chatbot.py
 
 volumes:
   qdrant_storage:

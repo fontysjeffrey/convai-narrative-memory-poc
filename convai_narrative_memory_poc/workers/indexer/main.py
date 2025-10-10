@@ -10,8 +10,8 @@ from convai_narrative_memory_poc.workers.common.utils import (
     get_embedding_dim,
 )
 
-TOP_IN = "anchors.write"
-TOP_OUT = "anchors.indexed"
+TOP_IN = "anchors-write"
+TOP_OUT = "anchors-indexed"
 
 
 def ensure_collection(client: QdrantClient):
