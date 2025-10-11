@@ -222,7 +222,7 @@ Benefit: Gradual, natural fading while preserving important old memories
 
 ### How to Test If Decay Feels Right
 
-1. **Create memories at different time points** (use `demo_simulation.py` with adjusted timestamps)
+1. **Create memories at different time points** (use `tools/validation_experiments.py` with adjusted timestamps)
 2. **Query for related information**
 3. **Observe which memories surface and in what order**
 4. **Check if the pattern feels human-like**
@@ -352,4 +352,4 @@ This creates conversations that feel **genuinely human**—where the AI "remembe
 
 **Current implementation**: `convai_narrative_memory_poc/workers/resonance/main.py`  
 **Configuration**: Adjust `LAM` constant for different decay rates  
-**Testing**: Use `scripts/demo_simulation.py` with varied timestamps
+**Testing**: Use `convai_narrative_memory_poc/tools/validation_experiments.py` with varied timestamps

@@ -8,7 +8,7 @@ Tiny-but-real proof of concept of a Kafka + Qdrant memory loop for a virtual hum
 
 1. **Reset storage & topics** – ensures Qdrant matches the current embedding size and Kafka topics exist.
    ```bash
-   bash convai_narrative_memory_poc/tools/create_topics.sh
+   bash convai_narrative_memory_poc/scripts/create_topics.sh
    ```
 2. **Boot the workers**
    ```bash
@@ -58,21 +58,21 @@ If no remote embedding is available, the system stays on Ollama **bge-m3** and f
 
 ---
 
-## Local (no Docker)
+## Local Dev (Python only)
 
 ```bash
-pip install -r requirements.txt
-python scripts/demo_simulation.py
+uv sync  # installs dependencies from pyproject.toml
+python -m convai_narrative_memory_poc.tools.validation_experiments
 ```
 
-This uses the same logic with an in-process store; handy for quick visualization without Kafka.
+This replays sample anchors, runs recall + retell, and prints diagnostics without Kafka or Docker.
 
 ---
 
 ## Handy Commands
 
 ```bash
-bash convai_narrative_memory_poc/tools/create_topics.sh   # reset Qdrant + create Kafka topics (anchors-write, recall-request, ...)
+bash convai_narrative_memory_poc/scripts/create_topics.sh   # reset Qdrant + create Kafka topics (anchors-write, recall-request, ...)
 
 docker compose -f convai_narrative_memory_poc/docker-compose.yml logs -f reteller   # watch reteller output
 
@@ -86,8 +86,7 @@ docker compose -f convai_narrative_memory_poc/docker-compose.yml run --rm tools 
 - `research/anchor_flux_model.md` – conceptual overview (start here)
 - `research/architecture.md` – system diagram and design notes
 - `research/env_config.md` – more detail on model choices and environment variables
-- `convai_narrative_memory_poc/tools/CHATBOT_DEMO.md` – walkthrough of the interactive CLI
 
 ---
 
-_This repo favors clarity over raw performance. Pull requests with improved ergonomics are welcome!_
+_This repo favors clarity over raw performance. Pull requests with improved ergonomics are welcome!_ – Lonn van Bokhorst, Coen Crombach
