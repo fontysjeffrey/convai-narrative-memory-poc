@@ -346,11 +346,11 @@ Production: Could partition by:
 
 ### Local Development (Fast Start)
 
-The repository includes `scripts/demo_simulation.py` which runs the entire flow in-process without Docker:
+Use `convai_narrative_memory_poc/tools/validation_experiments.py` to replay anchors, run recall + retell, and inspect activation scores without Kafka:
 
-- Simulates Kafka with in-memory queues
-- Uses local Qdrant
-- Perfect for rapid algorithm iteration
+- Pure Python execution (no Docker required)
+- Prints beats, retell output, and helpful diagnostics
+- Great for tweaking decay parameters or resonance heuristics
 
 ### Full Stack (This Docker Compose Setup)
 
