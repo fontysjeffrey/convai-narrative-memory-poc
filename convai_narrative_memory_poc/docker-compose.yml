@@ -92,5 +92,25 @@ services:
     tty: true
     command: python convai_narrative_memory_poc/tools/chatbot.py
 
+  streamlit:
+    build:
+      context: ../
+      dockerfile: ./convai_narrative_memory_poc/tools/Dockerfile
+    environment:
+      - KAFKA_BOOTSTRAP=kafka:9092
+      - PYTHONUNBUFFERED=1
+      - PORTKEY_API_KEY=${PORTKEY_API_KEY}
+      - PORTKEY_BASE_URL=${PORTKEY_BASE_URL:-https://api.portkey.ai/v1}
+      - PORTKEY_MODEL=${PORTKEY_MODEL:-mistral-large}
+      - PORTKEY_CONFIG_ID=${PORTKEY_CONFIG_ID}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3}
+    depends_on: [kafka, qdrant, indexer, resonance, reteller]
+    ports:
+      - "8501:8501"
+    command: streamlit run convai_narrative_memory_poc/ui/streamlit_app.py --server.address=0.0.0.0
+
 volumes:
   qdrant_storage:

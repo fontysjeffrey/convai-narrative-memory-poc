@@ -31,6 +31,28 @@ When you are done:
 docker compose -f convai_narrative_memory_poc/docker-compose.yml down
 ```
 
+### Streamlit Memory Dojo (New)
+
+This UI shows the conversation alongside anchors, recalls, and retells in real time.
+
+```bash
+docker compose -f convai_narrative_memory_poc/docker-compose.yml up -d \
+  kafka qdrant indexer resonance reteller streamlit
+```
+
+Visit <http://localhost:8501> to interact. Use the chat box for normal dialogue or the command box for `/advance_time`, `/reset_time`, and `/reset_session` controls. Advancing time now automatically refreshes the session to keep recall healthy.
+
+#### Persona Prompting
+
+- The Streamlit UI includes a **Persona prompt** text area (default: "Little Wan" dojo apprentice).
+- Edit the prompt to experiment with other personalities; the chatbot will call the configured Portkey/OpenAI model and respond using the persona plus the latest retelling (presented as `You remember: ...`).
+- Empty persona reverts to the default voice.
+
+#### Streaming Replies
+
+- Toggle **Stream replies in real time** to watch the persona output token-by-token (requires `PORTKEY_API_KEY` or `OPENAI_API_KEY`).
+- When streaming is disabled, replies fall back to the non-streaming path used previously.
+
 ---
 
 ## Other Demos
