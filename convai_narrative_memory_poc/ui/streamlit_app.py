@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import datetime as dt
-from typing import Iterable, List, Optional
+import json
+from typing import List, Optional
 
 import streamlit as st
 
@@ -12,6 +13,11 @@ from convai_narrative_memory_poc.tools.memory_service import (
     MemoryService,
     MemoryTurn,
 )
+
+
+def _event_signature(event: MemoryEvent) -> str:
+    payload_key = json.dumps(event.payload, sort_keys=True, default=str)
+    return f"{event.type}:{payload_key}"
 
 
 def _init_state():
@@ -134,16 +140,44 @@ def main():
                     with assistant_placeholder:
                         text_spot = st.empty()
                         collected = ""
+                        captured_events: List[MemoryEvent] = []
                         final_turn = None
-                        for chunk, maybe_turn in service.stream_user_message(user_text):
-                            if chunk:
-                                collected += chunk
+
+                        for token, event, maybe_turn in service.stream_user_message(
+                            user_text
+                        ):
+                            if token:
+                                collected += token
                                 text_spot.write(collected)
+
+                            if event:
+                                st.session_state.events.append(event)
+                                captured_events.append(event)
+
                             if maybe_turn:
                                 final_turn = maybe_turn
+
                         if final_turn:
                             st.session_state.turns.append(final_turn)
-                            st.session_state.events.extend(final_turn.events)
+
+                            existing_signatures = {
+                                _event_signature(ev) for ev in st.session_state.events
+                            }
+
+                            for event in final_turn.events:
+                                signature = _event_signature(event)
+                                if signature not in existing_signatures:
+                                    st.session_state.events.append(event)
+                                    existing_signatures.add(signature)
+
+                        else:
+                            if captured_events:
+                                st.session_state.events = [
+                                    event
+                                    for event in st.session_state.events
+                                    if event not in captured_events
+                                ]
+
                 else:
                     turn = service.send_user_message(user_text)
                     st.session_state.turns.append(turn)

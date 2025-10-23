@@ -16,7 +16,7 @@ import json
 import uuid
 import time
 import datetime as dt
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Iterable
 
 import requests
 from confluent_kafka import Producer, Consumer
@@ -332,7 +332,7 @@ class MemoryChatbot:
 
     def chat_turn_stream(
         self, user_input: str, persona: Optional[str] = None
-    ) -> Any:
+    ) -> Iterable[Dict[str, Any]]:
         """Stream a full turn while recording anchors/recall metadata."""
 
         turn_data: Dict[str, Any] = {
@@ -344,6 +344,13 @@ class MemoryChatbot:
 
         user_anchor_id = self.store_anchor(f"User said: {user_input}", salience=0.9)
         turn_data["anchors"]["user"] = user_anchor_id
+        yield {
+            "kind": "event",
+            "event": {
+                "type": "anchor_stored",
+                "payload": {"role": "user", "anchor_id": user_anchor_id},
+            },
+        }
 
         try:
             recall_data = self.request_recall(user_input, top_k=5)
@@ -354,9 +361,32 @@ class MemoryChatbot:
             traceback.print_exc()
             recall_data = None
 
-        if recall_data and recall_data.get("beats"):
+        if recall_data:
             turn_data["recall"] = recall_data
-            self.display_recall_info(recall_data)
+
+            if recall_data.get("beats"):
+                self.display_recall_info(recall_data)
+
+            yield {
+                "kind": "event",
+                "event": {"type": "recall", "payload": recall_data},
+            }
+
+            beats = recall_data.get("beats") or []
+            if beats:
+                yield {
+                    "kind": "event",
+                    "event": {"type": "beats", "payload": {"beats": beats}},
+                }
+
+            if recall_data.get("retelling"):
+                yield {
+                    "kind": "event",
+                    "event": {
+                        "type": "retell",
+                        "payload": {"retelling": recall_data["retelling"]},
+                    },
+                }
         else:
             self.log_memory_op("💭", "No memories recalled", Colors.DIM)
 
@@ -366,14 +396,22 @@ class MemoryChatbot:
             recall_data=recall_data,
             persona=persona,
         ):
-            collected.append(chunk)
-            yield chunk
+            if chunk:
+                collected.append(chunk)
+                yield {"kind": "token", "delta": chunk}
 
         response = "".join(collected).strip()
         bot_anchor_id = self.store_anchor(f"Bot said: {response}", salience=0.7)
         turn_data["anchors"]["bot"] = bot_anchor_id
         turn_data["response"] = response
-        yield turn_data
+        yield {
+            "kind": "event",
+            "event": {
+                "type": "anchor_stored",
+                "payload": {"role": "bot", "anchor_id": bot_anchor_id},
+            },
+        }
+        yield {"kind": "final", "turn": turn_data}
 
     def _generate_persona_response_sync(
         self,
@@ -417,9 +455,7 @@ class MemoryChatbot:
                         yield chunk
                 return
             except Exception as exc:
-                print(
-                    f"[chatbot] Portkey streaming failed: {exc}", file=sys.stderr
-                )
+                print(f"[chatbot] Portkey streaming failed: {exc}", file=sys.stderr)
 
         fallback = self._generate_persona_response_sync(
             user_input, recall_data, persona_text

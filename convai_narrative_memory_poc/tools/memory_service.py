@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import datetime as dt
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from .chatbot import MemoryChatbot
 
@@ -86,26 +86,54 @@ class MemoryService:
 
     def stream_user_message(
         self, text: str
-    ) -> Iterable[tuple[str, Optional[MemoryTurn]]]:
-        generator = self._chatbot.chat_turn_stream(text, persona=self._persona)
+    ) -> Iterable[Tuple[Optional[str], Optional[MemoryEvent], Optional[MemoryTurn]]]:
+        turn_stream = self._chatbot.chat_turn_stream(text, persona=self._persona)
         turn_data: Optional[Dict[str, Any]] = None
-        for chunk in generator:
-            if isinstance(chunk, dict):
-                turn_data = chunk
-            else:
-                yield (chunk, None)
+        pre_events: List[MemoryEvent] = []
+
+        for item in turn_stream:
+            if not isinstance(item, dict):
+                continue
+
+            kind = item.get("kind")
+
+            if kind == "token":
+                yield (item.get("delta", ""), None, None)
+                continue
+
+            if kind == "event":
+                event_payload = item.get("event", {})
+                event = MemoryEvent(
+                    type=event_payload.get("type", "unknown"),
+                    payload=event_payload.get("payload", {}),
+                )
+                pre_events.append(event)
+                yield (None, event, None)
+                continue
+
+            if kind == "final":
+                turn_data = item.get("turn")
 
         memory_turn = None
         if turn_data:
-            memory_turn = self._build_turn(text, turn_data)
-        yield ("", memory_turn)
+            memory_turn = self._build_turn(text, turn_data, pre_events)
 
-    def _build_turn(self, text: str, turn: Dict[str, Any]) -> MemoryTurn:
-        events: List[MemoryEvent] = []
+        yield (None, None, memory_turn)
+
+    def _build_turn(
+        self,
+        text: str,
+        turn: Dict[str, Any],
+        pre_events: Optional[List[MemoryEvent]] = None,
+    ) -> MemoryTurn:
+        events: List[MemoryEvent] = list(pre_events) if pre_events else []
         user_anchor = turn["anchors"].get("user")
         bot_anchor = turn["anchors"].get("bot")
 
-        if user_anchor:
+        if user_anchor and not any(
+            e.type == "anchor_stored" and e.payload.get("role") == "user"
+            for e in events
+        ):
             events.append(
                 MemoryEvent(
                     type="anchor_stored",
@@ -114,20 +142,28 @@ class MemoryService:
             )
 
         recall_data = turn.get("recall")
-        if recall_data:
+        if recall_data and not any(e.type == "recall" for e in events):
             events.append(MemoryEvent(type="recall", payload=recall_data))
-            beats = recall_data.get("beats") or []
-            if beats:
-                events.append(MemoryEvent(type="beats", payload={"beats": beats}))
-            if recall_data.get("retelling"):
-                events.append(
-                    MemoryEvent(
-                        type="retell",
-                        payload={"retelling": recall_data["retelling"]},
-                    )
-                )
 
-        if bot_anchor:
+        beats = recall_data.get("beats") if recall_data else None
+        if beats and not any(e.type == "beats" for e in events):
+            events.append(MemoryEvent(type="beats", payload={"beats": beats}))
+
+        if (
+            recall_data
+            and recall_data.get("retelling")
+            and not any(e.type == "retell" for e in events)
+        ):
+            events.append(
+                MemoryEvent(
+                    type="retell",
+                    payload={"retelling": recall_data["retelling"]},
+                )
+            )
+
+        if bot_anchor and not any(
+            e.type == "anchor_stored" and e.payload.get("role") == "bot" for e in events
+        ):
             events.append(
                 MemoryEvent(
                     type="anchor_stored",

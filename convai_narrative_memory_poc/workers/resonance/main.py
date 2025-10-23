@@ -16,7 +16,10 @@ TOP_OUT = "recall-response"
 LAM = 0.002  # time decay per day
 MU = 0.001  # cross-time damping
 MAX_BEATS = int(os.getenv("RESONANCE_MAX_BEATS", "3"))
-DIVERSITY_THRESHOLD = float(os.getenv("RESONANCE_DIVERSITY_THRESHOLD", "0.92"))
+DIVERSITY_THRESHOLD = float(os.getenv("RESONANCE_DIVERSITY_THRESHOLD", "0.85"))
+DIVERSITY_FLOOR = float(os.getenv("RESONANCE_DIVERSITY_FLOOR", "0.7"))
+DIVERSITY_STEP = float(os.getenv("RESONANCE_DIVERSITY_STEP", "0.05"))
+DIVERSITY_NEW_TAG_BONUS = float(os.getenv("RESONANCE_NEW_TAG_BONUS", "0.05"))
 
 
 def search_anchors(client, query_vec, top_k=5):
@@ -62,31 +65,63 @@ def select_diverse_scored(scored, desired, embedding_cache):
 
     selected = []
     taken_ids = set()
+    seen_tags = set()
 
-    for act, h in scored:
-        payload = getattr(h, "payload", {}) or {}
-        text = payload.get("text")
-        if text and text not in embedding_cache:
-            embedding_cache[text] = get_embedding(text)
+    threshold = DIVERSITY_THRESHOLD
 
-        is_diverse = True
-        if text and text in embedding_cache:
-            cand_vec = embedding_cache[text]
-            for _, existing in selected:
-                ex_payload = getattr(existing, "payload", {}) or {}
-                ex_text = ex_payload.get("text")
-                if not ex_text or ex_text not in embedding_cache:
-                    continue
-                sim = cosine_similarity(cand_vec, embedding_cache[ex_text])
-                if sim >= DIVERSITY_THRESHOLD:
-                    is_diverse = False
+    def anchor_tags(hit_payload):
+        meta = hit_payload.get("meta") or {}
+        tags = meta.get("tags")
+        if isinstance(tags, list):
+            return {str(tag).lower() for tag in tags}
+        if isinstance(tags, str):
+            return {tags.lower()}
+        return set()
+
+    attempts = 0
+    while threshold >= DIVERSITY_FLOOR and len(selected) < desired:
+        attempts += 1
+        added_this_round = False
+        for act, h in scored:
+            if h.id in taken_ids:
+                continue
+
+            payload = getattr(h, "payload", {}) or {}
+            text = payload.get("text")
+            if text and text not in embedding_cache:
+                embedding_cache[text] = get_embedding(text)
+
+            penalty = 0.0
+            if text and text in embedding_cache:
+                cand_vec = embedding_cache[text]
+                for _, existing in selected:
+                    ex_payload = getattr(existing, "payload", {}) or {}
+                    ex_text = ex_payload.get("text")
+                    if not ex_text:
+                        continue
+                    if ex_text not in embedding_cache:
+                        embedding_cache[ex_text] = get_embedding(ex_text)
+                    sim = cosine_similarity(cand_vec, embedding_cache[ex_text])
+                    penalty = max(penalty, sim)
+
+            anchor_tag_set = anchor_tags(payload)
+            new_tags = anchor_tag_set - seen_tags
+            adjusted_act = act
+            if new_tags:
+                adjusted_act += DIVERSITY_NEW_TAG_BONUS
+
+            if penalty < threshold:
+                selected.append((adjusted_act, h))
+                taken_ids.add(h.id)
+                seen_tags.update(anchor_tag_set)
+                added_this_round = True
+                if len(selected) >= desired:
                     break
 
-        if is_diverse:
-            selected.append((act, h))
-            taken_ids.add(h.id)
-        if len(selected) >= desired:
-            break
+        if not added_this_round:
+            threshold -= max(DIVERSITY_STEP, 0.01)
+        else:
+            threshold -= DIVERSITY_STEP
 
     if len(selected) < desired:
         for act, h in scored:
