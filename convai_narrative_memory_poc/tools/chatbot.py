@@ -92,11 +92,17 @@ class MemoryChatbot:
     def __init__(self):
         self.producer = Producer({"bootstrap.servers": KAFKA_BOOTSTRAP})
         self.time_offset = dt.timedelta(0)  # For time manipulation
-        self.conversation_history = []
+        self.conversation_history: List[Dict[str, str]] = []
+        self._last_user_anchor_id: Optional[str] = None
+        self._last_bot_anchor_id: Optional[str] = None
+        allow_session_env = os.getenv("CHATBOT_ALLOW_SESSION_RECALL", "1").lower()
+        self.allow_session_recall = allow_session_env not in {"0", "false", "no"}
         self.session_id = str(uuid.uuid4())[:8]
 
     def reset_session(self, reason: Optional[str] = None):
         self.conversation_history.clear()
+        self._last_user_anchor_id = None
+        self._last_bot_anchor_id = None
         self.session_id = str(uuid.uuid4())[:8]
         message = "Session reset; new session_id " + self.session_id
         if reason:
@@ -146,7 +152,13 @@ class MemoryChatbot:
 
         return anchor_id
 
-    def request_recall(self, query: str, top_k: int = 5) -> Optional[Dict]:
+    def request_recall(
+        self,
+        query: str,
+        top_k: int = 5,
+        ignore_anchor_ids: Optional[List[str]] = None,
+        allow_session_matches: bool = False,
+    ) -> Optional[Dict]:
         """Request memory recall and wait for response."""
         request_id = str(uuid.uuid4())
         now = self.get_current_time()
@@ -158,6 +170,11 @@ class MemoryChatbot:
             "top_k": top_k,
             "session_id": self.session_id,
         }
+
+        if ignore_anchor_ids:
+            request["ignore_anchor_ids"] = ignore_anchor_ids
+        if allow_session_matches:
+            request["allow_session_matches"] = True
 
         # Subscribe to response topics BEFORE sending request
         recall_consumer = self._create_consumer("recall-response")
@@ -303,10 +320,20 @@ class MemoryChatbot:
         # Store the user's message
         user_anchor_id = self.store_anchor(f"User said: {user_input}", salience=0.9)
         turn_data["anchors"]["user"] = user_anchor_id
+        self._last_user_anchor_id = user_anchor_id
+        self._append_history("user", user_input)
 
         # Try to recall relevant memories (but not the message we just stored)
         try:
-            recall_data = self.request_recall(user_input, top_k=5)
+            ignore_ids: List[str] = []
+            if self._last_bot_anchor_id:
+                ignore_ids.append(self._last_bot_anchor_id)
+            recall_data = self.request_recall(
+                user_input,
+                top_k=5,
+                ignore_anchor_ids=ignore_ids or None,
+                allow_session_matches=self.allow_session_recall,
+            )
         except Exception as e:
             print(f"[ERROR] Exception in request_recall: {e}", file=sys.stderr)
             import traceback
@@ -327,6 +354,8 @@ class MemoryChatbot:
         bot_anchor_id = self.store_anchor(f"Bot said: {response}", salience=0.7)
         turn_data["anchors"]["bot"] = bot_anchor_id
         turn_data["response"] = response
+        self._last_bot_anchor_id = bot_anchor_id
+        self._append_history("assistant", response)
 
         return turn_data
 
@@ -344,6 +373,8 @@ class MemoryChatbot:
 
         user_anchor_id = self.store_anchor(f"User said: {user_input}", salience=0.9)
         turn_data["anchors"]["user"] = user_anchor_id
+        self._last_user_anchor_id = user_anchor_id
+        self._append_history("user", user_input)
         yield {
             "kind": "event",
             "event": {
@@ -353,7 +384,15 @@ class MemoryChatbot:
         }
 
         try:
-            recall_data = self.request_recall(user_input, top_k=5)
+            ignore_ids: List[str] = []
+            if self._last_bot_anchor_id:
+                ignore_ids.append(self._last_bot_anchor_id)
+            recall_data = self.request_recall(
+                user_input,
+                top_k=5,
+                ignore_anchor_ids=ignore_ids or None,
+                allow_session_matches=self.allow_session_recall,
+            )
         except Exception as e:
             print(f"[ERROR] Exception in request_recall: {e}", file=sys.stderr)
             import traceback
@@ -404,6 +443,8 @@ class MemoryChatbot:
         bot_anchor_id = self.store_anchor(f"Bot said: {response}", salience=0.7)
         turn_data["anchors"]["bot"] = bot_anchor_id
         turn_data["response"] = response
+        self._last_bot_anchor_id = bot_anchor_id
+        self._append_history("assistant", response)
         yield {
             "kind": "event",
             "event": {
@@ -412,6 +453,17 @@ class MemoryChatbot:
             },
         }
         yield {"kind": "final", "turn": turn_data}
+
+    def _append_history(self, role: str, content: str):
+        trimmed = content.strip()
+        if not trimmed:
+            return
+        self.conversation_history.append({"role": role, "content": trimmed})
+        max_turns = max(0, int(os.getenv("CHATBOT_HISTORY_TURNS", "6")))
+        if max_turns > 0:
+            max_entries = max_turns * 2
+            if len(self.conversation_history) > max_entries:
+                self.conversation_history = self.conversation_history[-max_entries:]
 
     def _generate_persona_response_sync(
         self,
@@ -483,17 +535,25 @@ class MemoryChatbot:
             if snippets:
                 memory_text = " ".join(snippets)
 
+        history_messages: List[Dict[str, str]] = []
+        if self.conversation_history:
+            history_messages.extend(self.conversation_history)
+
         context_note = (
             f"You remember: {memory_text}"
             if memory_text
             else "You currently recall no relevant memories from the archive."
         )
 
-        messages = [
+        messages: List[Dict[str, str]] = [
             {"role": "system", "content": persona_text},
             {"role": "system", "content": context_note},
-            {"role": "user", "content": user_input},
         ]
+
+        if history_messages:
+            messages.extend(history_messages)
+
+        messages.append({"role": "user", "content": user_input})
 
         return messages, memory_text, persona_text
 

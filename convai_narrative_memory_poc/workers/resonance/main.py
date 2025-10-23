@@ -169,6 +169,7 @@ def main():
             top_k = int(payload.get("top_k", 5))
             session_id = payload.get("session_id")
             ignore_ids = set(payload.get("ignore_anchor_ids") or [])
+            allow_session_matches = bool(payload.get("allow_session_matches"))
             assumed_age = payload.get(
                 "assume_anchor_age"
             )  # optional ISO 8601 duration, not used here
@@ -189,7 +190,11 @@ def main():
                     continue
                 payload_obj = getattr(h, "payload", {}) or {}
                 meta = payload_obj.get("meta", {}) or {}
-                if session_id and meta.get("session") == session_id:
+                if (
+                    not allow_session_matches
+                    and session_id
+                    and meta.get("session") == session_id
+                ):
                     continue
                 stored_iso = payload_obj.get("stored_at")
                 if stored_iso:
@@ -207,7 +212,11 @@ def main():
             for h in hits:
                 pl = h.payload
                 meta = (pl.get("meta") or {}) if isinstance(pl, dict) else {}
-                if session_id and meta.get("session") == session_id:
+                if (
+                    not allow_session_matches
+                    and session_id
+                    and meta.get("session") == session_id
+                ):
                     continue
                 decay = decay_weight(pl["stored_at"], now)
                 sal = float(pl.get("salience", 1.0))
