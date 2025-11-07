@@ -19,21 +19,21 @@ Edit the following fields to finish the project page:
 <head>
   <meta charset="utf-8">
   <!-- (1) Edit the following meta tags for your project -->
-  <meta name="description" content="Anchor-and-Flux memory research for virtual humans by Fontys MindLabs">
-  <meta property="og:title" content="Anchor-and-Flux Memory for Virtual Humans"/>
-  <meta property="og:description" content="Proof-of-concept demonstrating anchors, flux, and temporal decay for conversational AI."/>
-  <meta property="og:url" content="https://leonvanbokhorst.github.io/convai-narrative-memory-poc"/>
-  <meta property="og:image" content="static/images/anchor-flux-banner.png" />
+  <meta name="description" content="A multi-agent, psychologically-grounded, long-term memory system for virtual humans, enabling emergent identity through stories over time.">
+  <meta property="og:title" content="Virtual Human Memory: A Multi-Agent Memory Architecture"/>
+  <meta property="og:description" content="A distributed, multi-agent memory system featuring an Indexer, Resonance Engine, and Reteller for psychologically-grounded conversational AI."/>
+  <meta property="og:url" content="https://research-group-ixd.github.io/virtual-human-memory/"/>
+  <meta property="og:image" content="static/images/narrative-memory.png" />
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
-  <meta name="twitter:title" content="Anchor-and-Flux Memory for Virtual Humans">
-  <meta name="twitter:description" content="MindLabs research on conversational AI memory with anchors and flux.">
-  <meta name="twitter:image" content="static/images/anchor-flux-banner.png">
+  <meta name="twitter:title" content="Virtual Human Memory: A Multi-Agent Memory Architecture">
+  <meta name="twitter:description" content="Research project on a distributed, multi-agent memory system for psychologically-grounded conversational AI.">
+  <meta name="twitter:image" content="static/images/narrative-memory.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="keywords" content="virtual human, conversational AI, memory, anchor, flux, ebbinghaus, mindlabs, fontys">
+  <meta name="keywords" content="virtual human, conversational AI, long-term memory, multi-agent systems, memory architecture, indexer, resonance, reteller, mindlabs, fontys">
 
   <!-- (2) Change the title of the page -->
-  <title>Anchor-and-Flux Memory PoC</title>
+  <title>Virtual Human Memory</title>
 
   <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
@@ -63,13 +63,13 @@ Edit the following fields to finish the project page:
         <div class="columns is-centered">
           <div class="column has-text-centered">
             <!-- (3) Title of the project -->
-            <h1 class="title is-1 publication-title">Anchor-and-Flux Memory for Virtual Humans</h1>
+            <h1 class="title is-1 publication-title">Virtual Human Memory</h1>
             <div class="is-size-5 publication-authors">
               <!-- (4) Authors of the project -->
               <span class="author-block">
-                <a href="https://www.linkedin.com/in/coen-crombach/" target="_blank">Coen Crombach</a><sup>*</sup>,</span>
+                <a href="https://www.linkedin.com/in/leonvanbokhorst/" target="_blank">Leon (Lonn) van Bokhorst</a><sup>*</sup>,</span>
                 <span class="author-block">
-                  <a href="https://www.linkedin.com/in/leonvanbokhorst/" target="_blank">Leon (Lonn) van Bokhorst</a><sup>*</sup>,</span>
+                  <a href="https://www.linkedin.com/in/coen-crombach/" target="_blank">Coen Crombach</a><sup>*</sup>,</span>
                   </div>
 
                   <div class="is-size-5 publication-authors">
@@ -80,79 +80,44 @@ Edit the following fields to finish the project page:
 
                   <div class="column has-text-centered">
                     <div class="publication-links">
-                      <!-- (6) Links to paper, arxiv, supplementary, code -->
+                      <!-- (6) Links to project repositories -->
                       <span class="link-block">
-                        <a href="https://github.com/leonvanbokhorst/convai-narrative-memory-poc/blob/main/RESEARCH_PROPOSAL.md" target="_blank"
+                        <a href="https://github.com/Research-Group-IxD/virtual-human-memory" target="_blank"
                         class="external-link button is-normal is-rounded is-dark">
                         <span class="icon">
-                          <i class="fas fa-file-pdf"></i>
+                          <i class="fab fa-github"></i>
                         </span>
-                        <span>Research Proposal</span>
+                        <span>Code (Workspace)</span>
                       </a>
                     </span>
-
                     <span class="link-block">
-                      <a href="https://github.com/leonvanbokhorst/convai-narrative-memory-poc/blob/main/ANCHOR_FLUX_MODEL.md" target="_blank"
+                      <a href="https://github.com/Research-Group-IxD/vhm-worker-indexer" target="_blank"
                       class="external-link button is-normal is-rounded is-dark">
                       <span class="icon">
-                        <i class="fas fa-file-alt"></i>
+                        <i class="fab fa-github"></i>
                       </span>
-                      <span>Anchor &amp; Flux Model</span>
+                      <span>Indexer Service</span>
                     </a>
                   </span>
-
                   <span class="link-block">
-                    <a href="https://github.com/leonvanbokhorst/convai-narrative-memory-poc/blob/main/RESEARCH_VALIDATION.md" target="_blank"
-                    class="external-link button is-normal is-rounded is-dark">
-                    <span class="icon">
-                      <i class="fas fa-chart-line"></i>
-                    </span>
-                    <span>Validation Results</span>
-                  </a>
-                </span>
-
-                  <span class="link-block">
-                    <a href="https://github.com/leonvanbokhorst/convai-narrative-memory-poc" target="_blank"
+                    <a href="https://github.com/Research-Group-IxD/vhm-worker-resonance" target="_blank"
                     class="external-link button is-normal is-rounded is-dark">
                     <span class="icon">
                       <i class="fab fa-github"></i>
                     </span>
-                    <span>Code</span>
+                    <span>Resonance Service</span>
                   </a>
                 </span>
-
-                <!-- Model link -->
                   <span class="link-block">
-                    <a href="https://huggingface.co/FICT" target="_blank"
+                    <a href="https://github.com/Research-Group-IxD/vhm-worker-reteller" target="_blank"
                     class="external-link button is-normal is-rounded is-dark">
                     <span class="icon">
-                      <img src="static/images/huggingface_logo-noborder.svg" alt="Hugging Face icon">
+                      <i class="fab fa-github"></i>
                     </span>
-                    <span>Dataset</span>
+                    <span>Reteller Service</span>
                   </a>
                 </span>
-
-                <!-- Dataset link -->
-                  <span class="link-block">
-                    <a href="https://huggingface.co/FICT" target="_blank"
-                    class="external-link button is-normal is-rounded is-dark">
-                    <span class="icon">
-                      <img src="static/images/huggingface_logo-noborder.svg" alt="Hugging Face icon">
-                    </span>
-                    <span>Model</span>
-                  </a>
-                </span>
-
-                <!-- ArXiv abstract Link -->
-                <span class="link-block">
-                  <a href="https://arxiv.org/abs/<ARXIV PAPER ID>" target="_blank"
-                  class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                    <i class="ai ai-arxiv"></i>
-                  </span>
-                  <span>arXiv</span>
-                </a>
-              </span>
+              </div>
             </div>
           </div>
         </div>
@@ -184,7 +149,7 @@ Edit the following fields to finish the project page:
         <h2 class="title is-3">Introduction</h2>
         <div class="content has-text-justified">
           <p>
-            Virtual human platforms often rely on static trait sliders or perfect recall systems, leading to brittle, robotic experiences. Our research proposes a psychologically grounded alternative: let <strong>identity emerge from stories over time</strong>. We model memory as two layers. <em>Anchors</em> store factual event memories; <em>flux</em> produces living retellings that adapt to context, mood, and perceived age while staying faithful to the anchor. This proof-of-concept demonstrates the approach within a Kafka-driven microservices architecture using Qdrant, BGE-M3 embeddings, and LLM-based retelling with Ebbinghaus forgetting dynamics.
+            Current virtual human memory systems often feel static and brittle. Our research introduces a dynamic, psychologically-grounded alternative where a virtual human's <strong>identity emerges from the stories it tells over time</strong>. We present the Virtual Human Memory (VHM) project, a distributed, multi-agent architecture that models long-term memory as a living, evolving process. The system comprises three core services: an <strong>Indexer</strong> that ingests new memories, a <strong>Resonance Engine</strong> that calculates their emotional and contextual significance, and a <strong>Reteller</strong> that weaves these memories into coherent, dynamic narratives.
           </p>
         </div>
       </div>
@@ -199,7 +164,7 @@ Edit the following fields to finish the project page:
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            We present a conversational AI memory system that combines durable <em>anchors</em> with adaptive <em>flux</em>. Anchors are facts stored as vectors with salience and timestamps. Flux is generated by an LLM that retells anchors according to perceived age, salience, and conversational prompt. Temporal realism is achieved by integrating the Ebbinghaus forgetting curve (λ = 0.002) and multi-factor activation (similarity × decay × salience). Automated experiments confirm that recent relevant anchors dominate recall, while high-salience older events remain accessible. The system runs on a GPU-native stack (RTX 4090/A6000 with Ollama) and falls back to API accelerators (Groq, Gemini, OpenAI) when GPU resources are unavailable.
+            We present a multi-agent system for long-term virtual human memory. The architecture is composed of loosely coupled microservices communicating over a message bus (e.g., Kafka). The <strong>Indexer</strong> receives new events and stores them as memory 'anchors' in a vector database, enriched with metadata like salience and timestamps. The <strong>Resonance Engine</strong> continuously evaluates incoming stimuli against the memory store, calculating an activation score based on similarity, salience, and temporal decay, modeled on the Ebbinghaus forgetting curve. Finally, the <strong>Reteller</strong> service uses the most highly activated memories to generate adaptive, context-aware narratives, or 'flux,' via a Large Language Model (LLM). This separation of concerns allows for a scalable, robust, and psychologically plausible memory system that enables virtual humans to develop a unique and evolving identity.
           </p>
         </div>
       </div>
@@ -266,12 +231,12 @@ Edit the following fields to finish the project page:
     <div class="container is-max-desktop content">
       <h2 class="title">BibTeX</h2>
       <p>If you reference this work, please cite the research proposal below.</p>
-      <pre><code>@misc{crombach2025anchorflux,
-  author       = {Crombach, Coen and van Bokhorst, Leon},
-  title        = {Anchor-and-Flux Memory for Virtual Humans},
+      <pre><code>@misc{vanbokhorst2025vhm,
+  author       = {van Bokhorst, Leon and Crombach, Coen},
+  title        = {A Multi-Agent Architecture for Virtual Human Memory},
   howpublished = {Fontys University of Applied Sciences, MindLabs},
   year         = {2025},
-  url          = {https://leonvanbokhorst.github.io/convai-narrative-memory-poc}
+  url          = {https://research-group-ixd.github.io/virtual-human-memory/}
 }</code></pre>
     </div>
   </section>
