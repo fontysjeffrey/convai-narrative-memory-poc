@@ -19,6 +19,13 @@ services:
     ports: ["6333:6333"]
     volumes: ["qdrant_storage:/qdrant/storage"]
 
+  ollama:
+    image: ollama/ollama:latest
+    ports: ["11434:11434"]
+    volumes: ["ollama_storage:/root/.ollama"]
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+
   indexer:
     build:
       context: ../
@@ -29,8 +36,8 @@ services:
       - QDRANT_URL=http://qdrant:6333
       - QDRANT_COLLECTION=anchors
       - EMBEDDING_MODEL=${EMBEDDING_MODEL:-ollama:bge-m3}
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
-    depends_on: [kafka, qdrant]
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+    depends_on: [kafka, qdrant, ollama]
 
   resonance:
     build:
@@ -42,8 +49,8 @@ services:
       - QDRANT_URL=http://qdrant:6333
       - QDRANT_COLLECTION=anchors
       - EMBEDDING_MODEL=${EMBEDDING_MODEL:-ollama:bge-m3}
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
-    depends_on: [kafka, qdrant]
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+    depends_on: [kafka, qdrant, ollama]
 
   reteller:
     build:
@@ -58,9 +65,9 @@ services:
       - PORTKEY_BASE_URL=${PORTKEY_BASE_URL:-https://api.portkey.ai/v1}
       - PORTKEY_CONFIG_ID=${PORTKEY_CONFIG_ID}
       - PORTKEY_MODEL=${PORTKEY_MODEL:-mistral-large}
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
       - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3}
-    depends_on: [kafka]
+    depends_on: [kafka, ollama]
 
   tools:
     build:
@@ -75,8 +82,8 @@ services:
       - PORTKEY_BASE_URL=${PORTKEY_BASE_URL:-https://api.portkey.ai/v1}
       - PORTKEY_CONFIG_ID=${PORTKEY_CONFIG_ID}
       - PORTKEY_EMBEDDING_MODEL=${PORTKEY_EMBEDDING_MODEL:-cohere-embed-v3}
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
-    depends_on: [kafka, qdrant]
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+    depends_on: [kafka, qdrant, ollama]
     volumes:
       - ../results:/app/results
 
@@ -87,7 +94,7 @@ services:
     environment:
       - KAFKA_BOOTSTRAP=kafka:9092
       - PYTHONUNBUFFERED=1
-    depends_on: [kafka, qdrant, indexer, resonance, reteller]
+    depends_on: [kafka, qdrant, ollama, indexer, resonance, reteller]
     stdin_open: true
     tty: true
     command: python convai_narrative_memory_poc/tools/chatbot.py
@@ -105,12 +112,13 @@ services:
       - PORTKEY_CONFIG_ID=${PORTKEY_CONFIG_ID}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
       - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3}
-    depends_on: [kafka, qdrant, indexer, resonance, reteller]
+    depends_on: [kafka, qdrant, ollama, indexer, resonance, reteller]
     ports:
       - "8501:8501"
     command: streamlit run convai_narrative_memory_poc/ui/streamlit_app.py --server.address=0.0.0.0
 
 volumes:
   qdrant_storage:
+  ollama_storage:

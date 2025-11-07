@@ -20,15 +20,18 @@ EMBEDDING_MODEL=mxbai-embed-large
 EMBEDDING_MODEL=bge-m3
 ```
 
-**Note**: For non-deterministic models, Ollama must be running with the model already pulled.
+**Note**: For non-deterministic models, Ollama must be running with the model already pulled. Ollama runs as a Docker service in `docker-compose.yml`.
 
 ## LLM Configuration for Narrative Retelling
 
 ### Ollama Configuration
 
+Ollama runs as a Docker service. The default configuration connects to it via the internal Docker network.
+
 ```bash
-# Ollama base URL (default works for local Ollama)
-OLLAMA_BASE_URL=http://localhost:11434
+# Ollama base URL (default connects to Docker service)
+# No need to set this unless you want to override the default
+OLLAMA_BASE_URL=http://ollama:11434
 
 # Choose your Ollama model for narrative generation
 # Based on your available models:
@@ -38,6 +41,15 @@ OLLAMA_MODEL=llama3           # 4.7GB, fast, good quality (default)
 # OLLAMA_MODEL=mistral        # 4.1GB, balanced performance
 # OLLAMA_MODEL=phi4           # 9.1GB, smart and efficient
 # OLLAMA_MODEL=qwen3:30b      # 18GB, most capable but slower
+```
+
+**Note**: After starting the Docker services, you'll need to pull the models inside the Ollama container:
+```bash
+# Pull embedding model (e.g., bge-m3)
+docker compose -f convai_narrative_memory_poc/docker-compose.yml exec ollama ollama pull bge-m3
+
+# Pull LLM model (e.g., llama3)
+docker compose -f convai_narrative_memory_poc/docker-compose.yml exec ollama ollama pull llama3
 ```
 
 ### OpenAI Configuration (Alternative)
@@ -102,17 +114,14 @@ docker compose -f convai_narrative_memory_poc/docker-compose.yml logs reteller -
 
 ### "Ollama embedding failed"
 
-- Ensure Ollama is running: `ollama list`
-- Ensure the embedding model is pulled: `ollama pull bge-m3`
-- Check Ollama is accessible: `curl http://localhost:11434/api/tags`
+- Ensure Ollama container is running: `docker compose -f convai_narrative_memory_poc/docker-compose.yml ps ollama`
+- Ensure the embedding model is pulled in the container: `docker compose -f convai_narrative_memory_poc/docker-compose.yml exec ollama ollama pull bge-m3`
+- Check Ollama is accessible: `docker compose -f convai_narrative_memory_poc/docker-compose.yml exec ollama ollama list`
+- Check Ollama logs: `docker compose -f convai_narrative_memory_poc/docker-compose.yml logs ollama`
 
 ### "Reteller using stub instead of LLM"
 
-- Check `OLLAMA_BASE_URL` is correct
-- Ensure `OLLAMA_MODEL` is pulled: `ollama pull llama3`
-- Check reteller logs for errors: `docker compose logs reteller`
-
-### Docker can't reach Ollama
-
-- Use `http://host.docker.internal:11434` instead of `localhost:11434`
-- This is already the default in `docker-compose.yml`
+- Check `OLLAMA_BASE_URL` is correct (should be `http://ollama:11434` for Docker)
+- Ensure `OLLAMA_MODEL` is pulled in the container: `docker compose -f convai_narrative_memory_poc/docker-compose.yml exec ollama ollama pull llama3`
+- Check reteller logs for errors: `docker compose -f convai_narrative_memory_poc/docker-compose.yml logs reteller`
+- Check Ollama logs: `docker compose -f convai_narrative_memory_poc/docker-compose.yml logs ollama`
