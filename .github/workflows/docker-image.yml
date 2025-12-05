@@ -26,6 +26,9 @@ jobs:
       - name: set env
         run: echo "NOW=$(date +'%Y.%m.%d')" >> $GITHUB_ENV
 
+      - name: Checkout
+        uses: actions/checkout@v5
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
