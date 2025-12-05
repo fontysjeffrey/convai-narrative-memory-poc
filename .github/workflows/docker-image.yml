@@ -31,4 +31,4 @@ jobs:
         with:
           context: convai_narrative_memory_poc/workers/indexer/
           push: true
-          tags: vhregistry.azurecr.io/narmem-indexer:${{env.NOW}}
+          tags: vhregistry.azurecr.io/narmem-indexer:${{ env.NOW }}
