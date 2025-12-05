@@ -32,6 +32,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: convai_narrative_memory_poc/workers/indexer/
+          image: vhregistry.azurecr.io/narmem-indexer
+          context: .
+          dockerfile: Dockerfile.indexer
           push: true
-          tags: vhregistry.azurecr.io/narmem-indexer:${{ env.NOW }}
+          tags: ${{ env.NOW }}
