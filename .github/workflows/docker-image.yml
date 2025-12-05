@@ -7,7 +7,7 @@ on:
     branches: [ "k8s" ]
 
 jobs:
-  docker:
+  docker-indexer:
     runs-on: ubuntu-latest
     steps:
       - name: Login to ACR virtual human
@@ -16,16 +16,19 @@ jobs:
           registry: vhregistry.azurecr.io
           username: ${{ vars.ACR_USERNAME }}
           password: ${{ secrets.ACR_TOKEN }} 
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3          
-      - uses: actions/checkout@v4
-      # - name: Build the Docker image
-      #   run: docker build  --file convai_narrative_memory_poc/workers/indexer/Dockerfile --tag vhregistry.azurecr.io/narmem-indexer:$(date +%s)
+
+      - name: set env
+        run: echo “NOW=$(date +’%Y.%m.%d’)” >> $GITHUB_ENV
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: convai_narrative_memory_poc/workers/indexer/
           push: true
-          tags: vhregistry.azurecr.io/narmem-indexer:$(date +%s)
+          tags: vhregistry.azurecr.io/narmem-indexer:${{env.NOW}}
